@@ -1,0 +1,1106 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#c9def9">
+<meta name="description" content="แอปฝึกพูดวิทยุ ATC ระดับ Approach: ซ้อมสั่งการ ฟัง readback โจทย์ฉุกเฉิน และฝึกอ่านตัวเลขตาม ICAO ใช้ฝึกเท่านั้น">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>ATC RT Trainer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Noto+Serif+Thai:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one phone-width column on a soft sky-to-lilac ground. Rounded white screens, pastel flash cards (lilac = task, sky = data, night = tips), black pill buttons, bottom tab bar. */
+:root{
+  --bg1:#c9def9; --bg2:#eedcf8; --curve:rgba(255,255,255,.75);
+  --surface:#ffffff; --surface-2:#f4f4f8; --ink:#0d1622; --muted:#676b82; --line:#e2e3ec;
+  --lilac:#e4a4f6; --lilac-soft:#f3dcfb; --lilac-ink:#24102e;
+  --sky:#8fc8f5; --sky-soft:#d8ecfc; --sky-ink:#0a2238;
+  --night:#0d1622; --night-ink:#f2f3f8; --night-muted:#a3a8bd;
+  --btn:#0d1622; --btn-ink:#ffffff;
+  --ok:#16794a; --ok-bg:#ddf3e7; --warn:#97600a; --warn-bg:#fbefd7; --bad:#b4271d; --bad-bg:#fbe3e0;
+  --display:"Instrument Serif","Noto Serif Thai",Georgia,serif;
+  --body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg1:#101629; --bg2:#1d1430; --curve:rgba(255,255,255,.12);
+  --surface:#161b2a; --surface-2:#1e2436; --ink:#eef0f7; --muted:#9ca2bb; --line:#2a3047;
+  --lilac:#cf8fe6; --lilac-soft:#2f2140; --lilac-ink:#1a0823;
+  --sky:#74b5ec; --sky-soft:#18293d; --sky-ink:#061626;
+  --night:#0a0e18; --night-ink:#eef0f7; --night-muted:#9ca2bb;
+  --btn:#eef0f7; --btn-ink:#0d1622;
+  --ok:#5fd194; --ok-bg:#12301f; --warn:#e8b456; --warn-bg:#33270f; --bad:#f28b80; --bad-bg:#3a1916; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg1:#101629; --bg2:#1d1430; --curve:rgba(255,255,255,.12);
+  --surface:#161b2a; --surface-2:#1e2436; --ink:#eef0f7; --muted:#9ca2bb; --line:#2a3047;
+  --lilac:#cf8fe6; --lilac-soft:#2f2140; --lilac-ink:#1a0823;
+  --sky:#74b5ec; --sky-soft:#18293d; --sky-ink:#061626;
+  --night:#0a0e18; --night-ink:#eef0f7; --night-muted:#9ca2bb;
+  --btn:#eef0f7; --btn-ink:#0d1622;
+  --ok:#5fd194; --ok-bg:#12301f; --warn:#e8b456; --warn-bg:#33270f; --bad:#f28b80; --bad-bg:#3a1916; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{min-height:100%}
+body{min-height:100%;background:linear-gradient(135deg,var(--bg1),var(--bg2)) fixed var(--bg1);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
+.curves{position:fixed;inset:0;pointer-events:none;z-index:0}
+.curves path{fill:none;stroke:var(--curve);stroke-width:2}
+.app{position:relative;z-index:1;max-width:520px;margin:0 auto;padding-block:16px calc(96px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.screen{background:var(--surface);border-radius:32px;padding:20px 18px 24px;display:flex;flex-direction:column;gap:18px;box-shadow:0 18px 50px -24px rgba(30,30,80,.35)}
+.top{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px}
+.top h1{margin:0;text-align:center;font-family:var(--body);font-weight:600;font-size:19px;text-wrap:balance}
+.iconbtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer;padding:0}
+.iconbtn svg{width:18px;height:18px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.pill{border:0;border-radius:999px;background:var(--btn);color:var(--btn-ink);font-weight:600;padding:14px 22px;min-height:52px;width:100%;font-size:16px}
+.ghost{border:0;background:none;color:var(--ink);font-weight:600;padding:10px;min-height:44px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.serif{font-family:var(--display);font-weight:400}
+.notice{margin:0;font-size:12.5px;color:var(--muted);text-align:center;text-wrap:balance}
+
+/* home */
+.total{text-align:center;display:grid;gap:2px}
+.total .lbl{color:var(--muted);font-size:15px}
+.total .big{font-family:var(--display);font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.total .sub{font-size:13px;color:var(--muted)}
+.chart{background:var(--sky);color:var(--sky-ink);border-radius:24px;padding:16px 16px 12px;display:grid;gap:4px}
+.chart h2{margin:0;font-size:16px;font-weight:600}
+.chart .cap{font-size:12.5px;opacity:.75}
+.chart svg{width:100%;height:auto;display:block;margin-top:6px}
+.chart .axis{font-family:var(--mono);font-size:9px;fill:var(--sky-ink);opacity:.7}
+.chart .gl{stroke:var(--sky-ink);opacity:.12}
+.chart .bar{fill:var(--surface);opacity:.5}
+.chart .bar.today{opacity:1}
+.chart .barlbl{font-family:var(--mono);font-size:9px;fill:var(--sky-ink)}
+.chart .barlbl.today{font-weight:600}
+.tipwrap{position:relative;padding-top:18px}
+.tipwrap::before,.tipwrap::after{content:"";position:absolute;left:14%;right:14%;top:0;height:40px;border-radius:20px;background:var(--lilac)}
+.tipwrap::after{left:7%;right:7%;top:9px;background:var(--sky)}
+.tip{position:relative;z-index:1;background:var(--night);color:var(--night-ink);border-radius:24px;padding:22px 20px;text-align:center;display:grid;gap:8px}
+.tip .k{font-family:var(--display);letter-spacing:.08em;font-size:15px;color:var(--night-muted)}
+.tip h3{margin:0;font-size:17px;font-weight:600;text-wrap:balance}
+.tip p{margin:0;font-size:13px;color:var(--night-muted)}
+.tip .src{font-size:11.5px;font-family:var(--mono)}
+.tip .badge{position:absolute;top:-10px;right:-6px;width:28px;height:28px;border-radius:50%;background:var(--sky);color:var(--sky-ink);display:grid;place-items:center;font-size:13px;font-weight:600;border:3px solid var(--surface)}
+.tip .next{justify-self:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--night-muted);background:none;color:var(--night-ink);display:grid;place-items:center}
+.tip .next svg{width:16px;height:16px}
+.prio h2{margin:0 0 4px;font-family:var(--display);font-size:32px;font-weight:400;text-align:center;text-wrap:balance}
+.prio p{margin:0 0 12px;text-align:center;color:var(--muted);font-size:13.5px}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 8px;min-height:50px;font-weight:500;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--lilac);border-color:var(--lilac);color:var(--lilac-ink)}
+.chip.alt[aria-pressed="true"]{background:var(--sky);border-color:var(--sky);color:var(--sky-ink)}
+.dots{display:flex;justify-content:center;gap:6px;margin:4px 0}
+.dots i{width:6px;height:6px;border-radius:3px;background:var(--line)}
+.dots i.on{width:22px;background:var(--ink)}
+
+/* drill */
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:14px;padding:4px;gap:4px}
+.seg button{border:0;border-radius:11px;background:none;padding:10px 6px;min-height:42px;font-weight:500;font-size:14px;color:var(--muted)}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.stack{position:relative;padding-right:18px;padding-bottom:6px;isolation:isolate}
+.stack .back{position:absolute;top:16px;bottom:16px;right:0;width:60%;border-radius:22px;background:var(--night);z-index:0}
+.stack .back.b2{right:9px;top:9px;bottom:9px;background:var(--sky)}
+.card{position:relative;z-index:2;background:var(--lilac);color:var(--lilac-ink);border-radius:24px;padding:20px 20px 22px;display:grid;gap:10px;min-height:250px;transform:rotate(-1.2deg)}
+.card>*{transform:rotate(1.2deg)}
+.card .count{font-family:var(--display);font-size:20px}
+.card .count span{opacity:.45}
+.card .cs{font-family:var(--display);font-size:44px;line-height:1.05;margin:0;overflow-wrap:anywhere}
+.card .meta{font-family:var(--mono);font-size:13px;opacity:.8}
+.card .ask{font-size:14.5px;line-height:1.5}
+.card .tags{display:flex;flex-wrap:wrap;gap:6px}
+.card .tag{border:1px solid rgba(36,16,46,.35);border-radius:999px;padding:4px 12px;font-size:12.5px}
+:root[data-theme="dark"] .card .tag{border-color:rgba(26,8,35,.4)}
+.controls{display:flex;gap:10px}
+.controls>.ctl{flex:1 1 0;min-width:0}
+.controls>.ctl.main{flex-grow:1.15}
+.ctl{border:1px solid var(--line);background:var(--surface);border-radius:22px;min-height:84px;display:grid;place-items:center;gap:2px;padding:8px;color:var(--ink)}
+.ctl svg{width:28px;height:28px}
+.ctl small{font-size:11.5px;color:var(--muted)}
+.ctl.main{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+.ctl.main small{color:inherit;opacity:.75}
+.ctl.main.live{background:var(--bad);border-color:var(--bad);color:#fff}
+.ctl[aria-pressed="true"] svg{fill:currentColor}
+textarea{width:100%;font-family:var(--mono);font-size:15px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:12px 14px;resize:vertical;min-height:64px}
+.partial{font-family:var(--mono);font-size:13px;color:var(--muted);min-height:1.2em}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1 1 auto}
+.sm{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 16px;min-height:44px;font-weight:500;font-size:14px}
+.sm.dark{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+.hint{font-size:12px;color:var(--muted);margin:0;text-align:center}
+.log{display:flex;flex-direction:column;gap:8px}
+.tx{display:grid;grid-template-columns:54px 1fr;gap:8px;align-items:baseline;padding:8px 12px;border-radius:14px;background:var(--surface-2)}
+.tx .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--muted)}
+.tx .what{font-family:var(--mono);font-size:13.5px;min-width:0;overflow-wrap:anywhere}
+.tx.pilot{background:var(--sky-soft)}
+.tx.atc{background:var(--lilac-soft)}
+.tx.sys{background:none;padding:2px 12px}
+.tx.sys .what{font-family:var(--body);color:var(--muted);font-size:12.5px}
+.hidden-text{filter:blur(5px);user-select:none}
+
+/* result */
+.result{border:1px solid var(--line);border-radius:24px;padding:16px;display:grid;gap:12px}
+.score{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.score .num{font-family:var(--display);font-size:46px;line-height:1;font-variant-numeric:tabular-nums}
+.score .verdict{font-weight:600}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.checks li{display:grid;grid-template-columns:22px 1fr;gap:6px;padding:7px 10px;border-radius:12px;font-size:14px}
+.checks li.ok{background:var(--ok-bg)} .checks li.ok .m{color:var(--ok)}
+.checks li.part{background:var(--warn-bg)} .checks li.part .m{color:var(--warn)}
+.checks li.bad{background:var(--bad-bg)} .checks li.bad .m{color:var(--bad)}
+.checks .m{font-family:var(--mono);font-weight:600}
+.checks small{display:block;color:var(--muted)}
+.model{font-family:var(--mono);font-size:14px;background:var(--surface-2);border-radius:12px;padding:10px 12px;overflow-wrap:anywhere}
+.src{margin:4px 0 0;padding-left:18px;font-size:12px;color:var(--muted);display:grid;gap:2px}
+.coach{white-space:pre-wrap;font-size:14px;background:var(--night);color:var(--night-ink);border-radius:18px;padding:14px 16px}
+
+/* numbers */
+.qcard{background:var(--sky);color:var(--sky-ink);border-radius:24px;padding:22px 20px;display:grid;gap:6px;text-align:center}
+.qcard .kind{font-size:13px;opacity:.8}
+.qcard .val{font-family:var(--display);font-size:54px;line-height:1.05;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.opts{display:grid;gap:8px}
+.opt{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:14px 16px;min-height:52px;text-align:left;font-family:var(--mono);font-size:14px}
+.opt.right{background:var(--ok-bg);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.explain{background:var(--surface-2);border-radius:16px;padding:12px 14px;font-size:13.5px;display:grid;gap:6px}
+.pron{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
+.pron div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-family:var(--mono);font-size:12px;text-align:center}
+.pron b{display:block;font-family:var(--display);font-size:20px;font-weight:400}
+
+details{border:1px solid var(--line);border-radius:18px;padding:12px 14px}
+summary{cursor:pointer;font-weight:600;font-size:14px}
+.set{display:grid;gap:10px;margin-top:10px}
+.set label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+select,input[type=range]{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px}
+.foot{font-size:12px;color:var(--muted);display:grid;gap:6px;padding:4px 6px}
+.foot p{margin:0}
+
+/* tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+.tabs nav{pointer-events:auto;width:100%;max-width:440px;background:var(--surface);border:1px solid var(--line);border-radius:22px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;gap:4px;box-shadow:0 12px 40px -18px rgba(20,20,60,.45)}
+.tabs a{display:grid;place-items:center;gap:2px;padding:6px 4px;border-radius:16px;color:var(--muted);text-decoration:none;font-size:11.5px;font-weight:500;min-height:52px}
+.tabs a svg{width:22px;height:22px}
+.tabs a[aria-current="page"]{background:var(--btn);color:var(--btn-ink)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion: no-preference){.card,.qcard{animation:pop .35s ease-out}@keyframes pop{from{transform:translateY(8px) rotate(-1.2deg)}}}
+</style>
+
+<svg class="curves" viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M-20 120 C 80 40, 160 220, 260 90 S 380 -10, 430 60"/>
+  <path d="M-30 640 C 60 560, 200 760, 300 660 S 420 600, 440 720"/>
+</svg>
+
+<div class="app">
+
+<!-- HOME -->
+<section class="screen" id="v-home" aria-labelledby="hHome">
+  <div class="top"><span></span><h1 id="hHome">ภาพรวม</h1><span></span></div>
+  <div class="total">
+    <span class="lbl">ฝึกไปแล้วทั้งหมด</span>
+    <span class="big" id="totalN">0</span>
+    <span class="sub" id="totalSub">ข้อ · เริ่มข้อแรกได้จากปุ่มด้านล่าง</span>
+  </div>
+  <div class="chart">
+    <h2>สถิติการฝึก</h2>
+    <span class="cap">จำนวนข้อที่ทำใน 7 วันล่าสุด (เก็บในเครื่องนี้เท่านั้น)</span>
+    <svg id="chart" viewBox="0 0 300 150" role="img" aria-label="กราฟจำนวนข้อที่ฝึก 7 วันล่าสุด"></svg>
+  </div>
+  <div class="tipwrap">
+    <div class="tip">
+      <span class="badge" id="tipN">1</span>
+      <span class="k">TRICKS &amp; TIPS</span>
+      <h3 id="tipH"></h3>
+      <p id="tipP"></p>
+      <p class="src" id="tipS"></p>
+      <button class="next" id="tipNext" aria-label="เคล็ดลับถัดไป"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+  <div class="prio">
+    <h2>เลือกหัวข้อที่อยากฝึก</h2>
+    <p>แตะเพื่อเปิดหรือปิดหัวข้อ โจทย์ในหน้าซ้อมสั่งการจะสุ่มจากหัวข้อที่เลือก</p>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="dots" aria-hidden="true"><i></i><i class="on"></i><i></i><i></i></div>
+  <button class="pill" id="goDrill">เริ่มฝึก</button>
+  <p class="notice">ใช้ฝึกเท่านั้น ห้ามใช้แทนขั้นตอนหรือคำสั่งในการทำงานจริง</p>
+</section>
+
+<!-- DRILL -->
+<section class="screen" id="v-drill" aria-labelledby="hDrill" hidden>
+  <div class="top">
+    <a class="iconbtn" href="#home" aria-label="กลับหน้าภาพรวม"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <h1 id="hDrill">ซ้อมสั่งการ</h1>
+    <button class="iconbtn" id="dNext" aria-label="โจทย์ใหม่"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+  <div class="seg" role="tablist" aria-label="โหมดฝึก">
+    <button role="tab" id="mIssue" aria-selected="true">สั่งการ</button>
+    <button role="tab" id="mHear" aria-selected="false">ฟัง readback</button>
+  </div>
+  <div class="stack"><div class="back" aria-hidden="true"></div><div class="back b2" aria-hidden="true"></div>
+    <article class="card" id="dCard">
+      <div class="count" id="dCount">1<span>/10</span></div>
+      <p class="cs" id="dCs">-</p>
+      <div class="meta" id="dMeta">-</div>
+      <div class="ask" id="dAsk">-</div>
+      <div class="tags" id="dTags"></div>
+    </article>
+  </div>
+  <div class="controls">
+    <button class="ctl" id="dPlay" aria-label="ฟังเสียงนักบินอีกครั้ง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><small>ฟังนักบิน</small></button>
+    <button class="ctl main" id="dMic" aria-label="กดพูด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><small id="dMicLbl">กดพูด</small></button>
+    <button class="ctl" id="dStar" aria-pressed="false" aria-label="เก็บโจทย์นี้ไว้ทวน"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg><small id="dStarLbl">เก็บไว้ทวน</small></button>
+  </div>
+  <div id="dHearBox" class="row" hidden>
+    <button class="sm" id="dReveal">แสดงข้อความ</button>
+    <button class="sm" id="dRbOk">readback ถูก</button>
+    <button class="sm dark" id="dRbBad">readback ผิด</button>
+  </div>
+  <div id="dInput" class="log">
+    <textarea id="dTx" rows="2" placeholder="พิมพ์หรือกดพูด เช่น NAGA 241, climb to flight level 150" aria-label="ข้อความที่ส่งออกอากาศ"></textarea>
+    <div class="partial" id="dPartial"></div>
+    <button class="pill" id="dSend">ส่ง</button>
+  </div>
+  <p class="hint" id="dHint">พิมพ์คำสั่งแล้วกดส่ง ถ้าเครื่องรองรับไมค์ ปุ่มกลางจะใช้พูดได้</p>
+  <div class="log" id="dLog" aria-live="polite"></div>
+  <section class="result" id="dResult" hidden></section>
+</section>
+
+<!-- SCENARIO -->
+<section class="screen" id="v-scen" aria-labelledby="hScen" hidden>
+  <div class="top">
+    <a class="iconbtn" href="#home" aria-label="กลับหน้าภาพรวม"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <h1 id="hScen">โจทย์สุ่มกับพี่เอ</h1>
+    <button class="iconbtn" id="sNext" aria-label="สุ่มโจทย์ใหม่"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+  <div class="stack"><div class="back" aria-hidden="true"></div><div class="back b2" aria-hidden="true"></div>
+    <article class="card" id="sCard">
+      <div class="count" id="sKind">-</div>
+      <p class="cs" id="sTitle">-</p>
+      <div class="meta" id="sMeta">-</div>
+      <div class="ask" id="sAsk">-</div>
+    </article>
+  </div>
+  <div class="controls">
+    <button class="ctl" id="sPlay" aria-label="ฟังเสียงนักบินอีกครั้ง"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><small>ฟังนักบิน</small></button>
+    <button class="ctl main" id="sMic" aria-label="กดพูด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><small id="sMicLbl">กดพูด</small></button>
+    <button class="ctl" id="sNext2" aria-label="สุ่มโจทย์ใหม่"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11l-3-3M20 17H9l3 3"/><path d="M16 7l4 0M4 17h4"/></svg><small>สุ่มใหม่</small></button>
+  </div>
+  <div class="log">
+    <textarea id="sTx" rows="2" placeholder="ตอบนักบินตรงนี้" aria-label="ข้อความตอบนักบิน"></textarea>
+    <div class="partial" id="sPartial"></div>
+    <button class="pill" id="sSend">ส่ง</button>
+  </div>
+  <div class="log" id="sLog" aria-live="polite"></div>
+  <section class="result" id="sResult" hidden></section>
+  <p class="hint">โจทย์สุ่มตอนนี้มีเฉพาะสถานการณ์ที่มีแหล่งอ้างอิงตรวจได้: MAYDAY, PAN PAN, สงสัยวิทยุขัดข้อง, emergency descent, ขอ code ฉุกเฉิน, สั่งเงียบความถี่, จบ distress</p>
+</section>
+
+<!-- NUMBERS -->
+<section class="screen" id="v-num" aria-labelledby="hNum" hidden>
+  <div class="top">
+    <a class="iconbtn" href="#home" aria-label="กลับหน้าภาพรวม"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <h1 id="hNum">อ่านตัวเลข</h1>
+    <button class="iconbtn" id="nNext" aria-label="ข้อถัดไป"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="qcard">
+    <span class="kind" id="nKind">-</span>
+    <span class="val" id="nVal">-</span>
+    <span class="kind">ข้อไหนอ่านถูกตามมาตรฐาน ICAO</span>
+  </div>
+  <div class="opts" id="nOpts"></div>
+  <div class="explain" id="nExplain" hidden></div>
+  <div class="row"><button class="sm" id="nSay">ฟังเสียงที่ถูก</button><button class="sm dark" id="nNext2">ข้อถัดไป</button></div>
+  <details>
+    <summary>ตารางออกเสียงตัวเลข</summary>
+    <div class="pron" id="pron" style="margin-top:10px"></div>
+    <p class="hint" style="text-align:left;margin-top:8px">ตาม ICAO Annex 10 Vol II ข้อ 5.2.1.4.3.1 ตัวพิมพ์ใหญ่คือพยางค์ที่ลงเสียง</p>
+  </details>
+</section>
+
+<div class="foot" id="foot">
+  <details style="background:var(--surface)">
+    <summary>เสียงนักบิน</summary>
+    <div class="set">
+      <label for="voice">สำเนียงหรือเสียง (ขึ้นกับเครื่องที่ใช้)<select id="voice"></select></label>
+      <label for="rate">ความเร็วพูด <span id="rateV">1.0</span><input type="range" id="rate" min="0.7" max="1.5" step="0.1" value="1.0"></label>
+      <label><span><input type="checkbox" id="squelch" checked> เสียงคลิกวิทยุ</span></label>
+    </div>
+  </details>
+  <p>รูปแบบประโยคอ้างอิง ICAO Doc 4444 PANS-ATM ฉบับที่ 16 (Amdt 1-7A) บทที่ 12 และข้อ 4.5.7.5 กฎอ่านตัวเลขอ้างอิง ICAO Annex 10 Vol II ฉบับที่ 7 ข้อ 5.2.1.4 สถานการณ์ฉุกเฉินอ้างอิง Annex 10 Vol II ข้อ 5.3 และ ICAO Doc 9432 ฉบับที่ 4 บทที่ 9 ทุกข้อแสดงเลขข้อที่ใช้</p>
+  <p>ชื่อหน่วย ความถี่ ชนิด approach และรันเวย์ มาจาก AIP Thailand ชุด AIRAC 29 OCT 2026 (AD 2 ของ VTUU, VTUV, VTUO, VTUQ) และ ENR 1.7 ส่วน callsign, ระดับ, heading, ความเร็ว, QNH และ squawk เป็นค่าสมมติ ก่อนใช้อ้างอิงให้ตรวจกับ AIRAC ปัจจุบัน</p>
+</div>
+</div>
+
+<div class="tabs"><nav aria-label="เมนู">
+  <a href="#home" data-v="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>ภาพรวม</a>
+  <a href="#drill" data-v="drill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>ซ้อมสั่ง</a>
+  <a href="#scenario" data-v="scenario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>โจทย์สุ่ม</a>
+  <a href="#numbers" data-v="numbers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/></svg>ตัวเลข</a>
+</nav></div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+/* ---------- sources ----------
+   Phraseology: ICAO Doc 4444 PANS-ATM 16th ed. (Amdt 1-7A).
+   Number pronunciation: ICAO Annex 10 Vol II 7th ed., 5.2.1.4 (rules written in our own words).
+   Distress/urgency: Annex 10 Vol II 5.3, ICAO Doc 9432 4th ed. Ch 9.
+   Aerodrome data: AIP Thailand, AIRAC 29 OCT 2026, AD 2 + ENR 1.7.
+   Callsigns, levels, headings, speeds, QNH and codes are fictional training values. */
+const D4444 = "ICAO Doc 4444 (16th ed., Amdt 1-7A)";
+const A10 = "ICAO Annex 10 Vol II (7th ed.)";
+const D9432 = "ICAO Doc 9432 (4th ed.)";
+const AIP = "AIP Thailand (AIRAC 29 OCT 2026)";
+const AERODROMES = [
+  { icao: "VTUU", ident: "UBL", city: "Ubon", app: "Ubon Approach", appAlt: ["ubon approach"], twr: "Ubon Tower", twrAlt: ["ubon tower"], appFreq: "123.5", twrFreq: "119.9",
+    p218: "AD 2-VTUU-1-9", p224: "AD 2-VTUU-1-13", apch: [["VOR", "05"], ["VOR", "23"], ["RNP", "05"], ["RNP", "23"]] },
+  { icao: "VTUV", ident: "ROT", city: "Roi Et", app: "Roi Et Approach", appAlt: ["roi et approach", "roiet approach"], twr: "Roi Et Tower", twrAlt: ["roi et tower", "roiet tower", "roy et tower"], appFreq: "125.4", twrFreq: "119.75",
+    p218: "AD 2-VTUV-1-7", p224: "AD 2-VTUV-1-9", apch: [["VOR", "18"], ["VOR", "36"], ["RNP", "18"], ["RNP", "36"]] },
+  { icao: "VTUO", ident: "BRM", city: "Buri Ram", app: "Buri Ram Approach", appAlt: ["buri ram approach", "buriram approach"], twr: "Buri Ram Tower", twrAlt: ["buri ram tower", "buriram tower"], appFreq: "125.55", twrFreq: "118.05",
+    p218: "AD 2-VTUO-1-6", p224: "AD 2-VTUO-1-8", apch: [["NDB", "04"], ["VOR", "04"], ["VOR", "22"], ["RNP", "04"], ["RNP", "22"]] },
+  { icao: "VTUQ", ident: "NKR", city: "Ratchasima", app: "Ratchasima Approach", appAlt: ["ratchasima approach"], twr: "Ratchasima Tower", twrAlt: ["ratchasima tower"], appFreq: "123.6", twrFreq: "119.8",
+    p218: "AD 2-VTUQ-1-5", p224: "AD 2-VTUQ-1-8", apch: [["VOR/DME", "06"], ["VOR/DME", "24"], ["RNP", "06"], ["RNP", "24"]] }
+];
+const RB_SRC = `${D4444} 4.5.7.5.1 c) ต้อง readback altimeter setting, SSR code, level, heading, speed`;
+const NUM_SRC = `${A10} 5.2.1.4 การอ่านตัวเลข`;
+
+/* ---------- ICAO number speech (Annex 10 Vol II 5.2.1.4) ---------- */
+const DIG = ["zero","one","two","tree","four","fife","six","seven","eight","niner"];
+const sayDigits = n => String(n).split("").map(d => DIG[+d]).join(" ");
+const sayFL = fl => fl % 100 === 0 ? `${DIG[fl / 100]} hundred` : sayDigits(fl);          /* 5.2.1.4.1.2 */
+const sayQNH = q => q === 1000 ? "one thousand" : sayDigits(q);                              /* 5.2.1.4.1.3 */
+const saySq = c => c % 1000 === 0 ? `${DIG[c / 1000]} thousand` : sayDigits(c);             /* 5.2.1.4.1.4 */
+const sayAlt = n => { const th = Math.floor(n / 1000), h = Math.floor((n % 1000) / 100);      /* 5.2.1.4.1.5 */
+  return [th ? `${sayDigits(th)} thousand` : "", h ? `${DIG[h]} hundred` : ""].filter(Boolean).join(" "); };
+const sayFreq = f => f.split(".").map(sayDigits).join(" decimal ");                           /* 5.2.1.4.1.7 */
+const pad3 = n => String(n).padStart(3, "0");
+const sayApch = t => t === "VOR/DME" ? "V O R D M E" : t.split("").join(" ");
+
+const TELS = ["THAI"]; /* basic callsign for now; more designators later after checking ICAO Doc 8585 */
+const csText = cs => `${cs.tel} ${cs.num}`;
+const csSay = cs => `${cs.tel[0] + cs.tel.slice(1).toLowerCase()} ${sayDigits(cs.num)}`;
+const newCs = () => ({ tel: pick(TELS), num: rand(101, 989) });
+
+const flOK = fl => fl >= 130 && fl <= 250; /* TL FL130: AIP ENR 1.7 2.1.2 */
+function pickFL(lo, hi) { let f; do { f = rand(lo / 10, hi / 10) * 10; } while (!flOK(f)); return f; }
+function shift(v, deltas, ok) { let n, g = 0; do { n = v + pick(deltas); g++; } while (!ok(n) && g < 50); return n; }
+const flSrc = fl => fl % 100 === 0 ? [`${A10} 5.2.1.4.1.2 FL ที่เป็นหลักร้อยพอดี อ่านว่า (เลข) HUNDRED`] : [];
+function sqCode() { let c; do { c = rand(1, 6) * 1000 + rand(0, 7) * 100 + rand(0, 7) * 10 + rand(0, 7); } while ([7500, 7600, 7700, 2000].includes(c)); return c; }
+
+/* ---------- drill templates (topic key → phrase, sources) ---------- */
+const TOPICS = [
+  { k: "level", t: "ไต่/ลดระดับ" }, { k: "alt", t: "ลดระดับ + QNH" }, { k: "heading", t: "Vector heading" },
+  { k: "speed", t: "ความเร็ว" }, { k: "squawk", t: "Squawk" }, { k: "approach", t: "Approach clearance" },
+  { k: "transfer", t: "โอนไป Tower" }, { k: "fav", t: "ข้อที่เก็บไว้", alt: true }
+];
+const TEMPLATES = {
+  climb(cs) {
+    const cur = pickFL(130, 210), fl = pickFL(cur + 20, 250);
+    return { topic: "level", cur: `FL${pad3(cur)}`, vals: { fl }, tags: ["climb", "flight level"],
+      thai: `ไต่ระดับไป FL${pad3(fl)}`,
+      atc: v => `${csText(cs)}, climb to flight level ${v.fl}`,
+      rb: v => `climb to flight level ${sayFL(v.fl)}`, rbText: v => `climb to flight level ${v.fl}`,
+      src: [`${D4444} 12.3.1.2 a) 1) CLIMB (or DESCEND) TO (level)`, `${D4444} 12.3.1.1 a) FLIGHT LEVEL (number)`, ...flSrc(fl), RB_SRC],
+      checks: v => [{ label: "ใช้คำสั่ง climb", any: ["climb"], crit: true }, { label: "มีคำว่า flight level", any: ["flight level"], crit: true }, { label: `ระดับ ${v.fl}`, num: v.fl, crit: true }],
+      wrong: [["descend", "สั่ง descend แต่โจทย์ให้ไต่ระดับ"]],
+      mutate: v => ({ fl: shift(v.fl, [-20, -10, 10, 20], flOK) }) };
+  },
+  descendFL(cs) {
+    const cur = pickFL(160, 250), fl = pickFL(130, cur - 20);
+    return { topic: "level", cur: `FL${pad3(cur)}`, vals: { fl }, tags: ["descend", "flight level"],
+      thai: `ลดระดับไป FL${pad3(fl)}`,
+      atc: v => `${csText(cs)}, descend to flight level ${v.fl}`,
+      rb: v => `descend to flight level ${sayFL(v.fl)}`, rbText: v => `descend to flight level ${v.fl}`,
+      src: [`${D4444} 12.3.1.2 a) 1) CLIMB (or DESCEND) TO (level)`, `${D4444} 12.3.1.1 a) FLIGHT LEVEL (number)`, ...flSrc(fl), RB_SRC],
+      checks: v => [{ label: "ใช้คำสั่ง descend", any: ["descend"], crit: true }, { label: "มีคำว่า flight level", any: ["flight level"], crit: true }, { label: `ระดับ ${v.fl}`, num: v.fl, crit: true }],
+      wrong: [["climb", "สั่ง climb แต่โจทย์ให้ลดระดับ"]],
+      mutate: v => ({ fl: shift(v.fl, [-20, -10, 10, 20], flOK) }) };
+  },
+  descendAlt(cs, ad) {
+    const cur = pickFL(130, 150), alt = rand(30, 90) * 100, qnh = Math.random() < 0.2 ? 1000 : rand(1001, 1015);
+    return { topic: "alt", cur: `FL${pad3(cur)}`, vals: { alt, qnh }, tags: ["feet", "QNH"],
+      thai: `ลดระดับไป ${alt.toLocaleString("en-US")} ft ใช้ QNH ${qnh} (ต่ำกว่า transition altitude 11000 ft ของ ${ad.icao})`,
+      atc: v => `${csText(cs)}, descend to ${v.alt} feet, QNH ${v.qnh}`,
+      rb: v => `descend to ${sayAlt(v.alt)} feet, QNH ${sayQNH(v.qnh)}`, rbText: v => `descend to ${v.alt} feet, QNH ${v.qnh}`,
+      src: [`${D4444} 12.3.1.2 a) 1) CLIMB (or DESCEND) TO (level)`, `${D4444} 12.3.1.1 c) (number) FEET`, `${D4444} 12.3.1.8 l) QNH (number)`,
+            `${A10} 5.2.1.4.1.5 altitude อ่านเป็น THOUSAND / HUNDRED`, `${A10} 5.2.1.4.1.3 QNH อ่านทีละตัว ยกเว้น 1000 อ่านว่า ONE THOUSAND`,
+            `${AIP} ${ad.p218} AD 2.17 Transition altitude 11000 ft`, `${AIP} ENR 1.7 2.1.2 Transition level FL130`, RB_SRC],
+      checks: v => [{ label: "ใช้คำสั่ง descend", any: ["descend"], crit: true }, { label: `ระดับ ${v.alt}`, num: v.alt, crit: true }, { label: "ตามด้วยคำว่า feet", any: ["feet"], crit: true },
+                    { label: "มีคำว่า QNH", any: ["qnh"], crit: true }, { label: `ค่า QNH ${v.qnh}`, num: v.qnh, crit: true }],
+      wrong: [["climb", "สั่ง climb แต่โจทย์ให้ลดระดับ"], ["flight level", "ใช้ flight level กับระดับที่อ้าง QNH"]],
+      mutate: v => Math.random() < 0.5 ? { alt: shift(v.alt, [-1000, -500, 500, 1000], a => a >= 3000 && a <= 9000), qnh: v.qnh }
+                                       : { alt: v.alt, qnh: shift(v.qnh, [-2, -1, 1, 2], q => q >= 1000 && q <= 1020) } };
+  },
+  heading(cs) {
+    const cur = pickFL(130, 200), hdg = rand(1, 36) * 10, dir = pick(["left", "right"]);
+    return { topic: "heading", cur: `FL${pad3(cur)}`, vals: { hdg, dir }, tags: [`turn ${dir}`, "heading"],
+      thai: `เลี้ยว${dir === "left" ? "ซ้าย" : "ขวา"} heading ${pad3(hdg)}`,
+      atc: v => `${csText(cs)}, turn ${v.dir} heading ${pad3(v.hdg)}`,
+      rb: v => `turn ${v.dir} heading ${sayDigits(pad3(v.hdg))}`, rbText: v => `turn ${v.dir} heading ${pad3(v.hdg)}`,
+      src: [`${D4444} 12.4.1.3 e) TURN LEFT (or RIGHT) HEADING (three digits)`, `${A10} 5.2.1.4.1.1 heading อ่านทีละตัว`, RB_SRC],
+      checks: v => [{ label: `บอกทิศ turn ${v.dir}`, any: [v.dir], crit: true }, { label: "มีคำว่า heading", any: ["heading"], crit: true }, { label: `heading ${pad3(v.hdg)}`, num: v.hdg, crit: true }],
+      wrong: [[dir === "left" ? "right" : "left", `เลี้ยวผิดทาง โจทย์ให้เลี้ยว ${dir}`]],
+      mutate: v => Math.random() < 0.4 ? { hdg: v.hdg, dir: v.dir === "left" ? "right" : "left" } : { hdg: shift(v.hdg, [-20, -10, 10, 20], h => h >= 10 && h <= 360), dir: v.dir } };
+  },
+  speed(cs) {
+    const cur = pickFL(130, 150), spd = rand(16, 25) * 10, verb = pick(["reduce", "increase"]);
+    return { topic: "speed", cur: `FL${pad3(cur)}`, vals: { spd }, tags: [verb, "knots"],
+      thai: `${verb === "reduce" ? "ลด" : "เพิ่ม"}ความเร็วเป็น ${spd} kt`,
+      atc: v => `${csText(cs)}, ${verb} speed to ${v.spd} knots`,
+      rb: v => `${verb} speed to ${sayDigits(v.spd)} knots`, rbText: v => `${verb} speed to ${v.spd} knots`,
+      src: [`${D4444} 12.4.1.6 f) INCREASE (or REDUCE) SPEED TO (number) KNOTS`, RB_SRC],
+      checks: v => [{ label: `ใช้คำสั่ง ${verb}`, any: [verb], crit: true }, { label: "มีคำว่า speed", any: ["speed"], crit: true }, { label: `ความเร็ว ${v.spd}`, num: v.spd, crit: true }, { label: "ตามด้วยหน่วย knots", any: ["knots"], crit: true }],
+      wrong: [[verb === "reduce" ? "increase" : "reduce", `ใช้คำสั่งกลับด้าน โจทย์ให้ ${verb}`]],
+      mutate: v => ({ spd: shift(v.spd, [-20, -10, 10, 20], s => s >= 140 && s <= 280) }) };
+  },
+  squawk(cs) {
+    const code = Math.random() < 0.15 ? pick([1000, 3000, 4000, 5000, 6000]) : sqCode();
+    return { topic: "squawk", cur: "-", vals: { code }, tags: ["squawk"],
+      thai: `ให้ตั้ง transponder เป็น code ${code}`,
+      atc: v => `${csText(cs)}, squawk ${v.code}`,
+      rb: v => `squawk ${saySq(v.code)}`, rbText: v => `squawk ${v.code}`,
+      src: [`${D4444} 12.4.3.3 b) SQUAWK (code)`, `${A10} 5.2.1.4.1.4 code อ่านทีละตัว ยกเว้นหลักพันพอดี อ่านว่า (เลข) THOUSAND`, RB_SRC],
+      checks: v => [{ label: "ใช้คำว่า squawk", any: ["squawk"], crit: true }, { label: `code ${v.code}`, num: v.code, crit: true }],
+      wrong: [],
+      mutate: v => { let n; do { n = sqCode(); } while (n === v.code); const s = String(v.code).split(""); const i = rand(1, 3); s[i] = String((+s[i] + pick([1, 2])) % 8); const m = +s.join(""); return { code: m !== v.code && m >= 1000 ? m : n }; } };
+  },
+  approach(cs, ad) {
+    const [type, rwy] = pick(ad.apch);
+    const others = ad.apch.filter(a => a[0] === type && a[1] !== rwy).map(a => a[1]);
+    const typeWord = type.toLowerCase().replace("/", " ");
+    return { topic: "approach", cur: "-", vals: { rwy }, tags: ["cleared", `${type} approach`],
+      thai: `อนุญาต ${type} approach RWY ${rwy} สนาม ${ad.icao}`,
+      atc: v => `${csText(cs)}, cleared ${type} approach runway ${v.rwy}`,
+      rb: v => `cleared ${sayApch(type)} approach runway ${sayDigits(v.rwy)}`, rbText: v => `cleared ${type} approach runway ${v.rwy}`,
+      src: [`${D4444} 12.3.3.2 f) CLEARED (type of approach) APPROACH [RUNWAY (number)]`, `${AIP} ${ad.p224} AD 2.24 รายการ Instrument Approach Chart ของ ${ad.icao}`,
+            `${A10} 5.2.1.4.1.1 runway อ่านทีละตัว`, `${D4444} 4.5.7.5.1.1 clearance อื่นต้อง readback หรือตอบรับให้ชัดว่าเข้าใจ`],
+      checks: v => [{ label: "ใช้คำว่า cleared", any: ["cleared"], crit: true }, { label: `ชนิด approach: ${type}`, any: [typeWord], crit: true }, { label: "มีคำว่า approach", any: ["approach"], crit: true },
+                    { label: "มีคำว่า runway", any: ["runway"], crit: false }, { label: `runway ${v.rwy}`, num: parseInt(v.rwy, 10), crit: true }],
+      wrong: [], mutate: others.length ? (() => ({ rwy: pick(others) })) : null };
+  },
+  transfer(cs, ad) {
+    return { topic: "transfer", cur: "-", vals: { f: ad.twrFreq, unit: ad.twr }, tags: ["contact", ad.twr],
+      thai: `โอนให้ ${ad.twr} (${ad.icao})`,
+      atc: v => `${csText(cs)}, contact ${v.unit} ${v.f}`,
+      rb: v => `contact ${v.unit} ${sayFreq(v.f)}`, rbText: v => `contact ${v.unit} ${v.f}`,
+      src: [`${D4444} 12.3.1.4 a) CONTACT (unit call sign) (frequency) [NOW]`, `${AIP} ${ad.p218} AD 2.18 ${ad.twr} ${ad.twrFreq} MHz`,
+            `${A10} 5.2.1.4.1.7 จุดทศนิยมใช้คำว่า DECIMAL`, `${D4444} 4.5.7.5.1.1 clearance อื่นต้อง readback หรือตอบรับให้ชัดว่าเข้าใจ`],
+      checks: v => [{ label: "ใช้คำว่า contact", any: ["contact"], crit: true }, { label: `ชื่อหน่วย ${v.unit}`, any: ad.twrAlt, crit: true }, { label: `ความถี่ ${v.f}`, num: parseFloat(v.f), crit: true }],
+      wrong: [[ad.app.toLowerCase(), "เรียกชื่อหน่วยผิด โจทย์ให้โอนไป Tower"]],
+      rawWrong: [[/\bpoint\b/i, "ใช้คำว่า point ตามมาตรฐานต้องใช้ DECIMAL (Annex 10 5.2.1.4.1.7)"]],
+      mutate: v => ({ f: ad.appFreq, unit: v.unit }) };
+  }
+};
+
+/* ---------- scenarios (app 2): pilot calls first, controller replies ---------- */
+const SCENARIOS = [
+  function mayday(ad) {
+    const cs = newCs(), qnh = rand(1001, 1015), alt = rand(40, 90) * 100, hdg = rand(1, 36) * 10;
+    return { kind: "Distress · MAYDAY", cs, title: csText(cs),
+      meta: `${ad.app} · ${ad.icao}`,
+      pilot: `MAYDAY MAYDAY MAYDAY, ${ad.app}, ${csText(cs)}, engine failure, request immediate landing ${ad.city}, passing ${alt} feet, heading ${pad3(hdg)}`,
+      pilotSay: `Mayday Mayday Mayday, ${ad.app}, ${csSay(cs)}, engine failure, request immediate landing ${ad.city}, passing ${sayAlt(alt)} feet, heading ${sayDigits(pad3(hdg))}`,
+      ask: `นักบินประกาศ MAYDAY ให้รับทราบทันทีแบบ ROGER MAYDAY แล้วให้ QNH ${qnh}`,
+      model: `${csText(cs)}, ${ad.app}, roger MAYDAY, QNH ${qnh}`,
+      src: [`${A10} 5.3.2.2.1 a) สถานีที่ถูกเรียกต้องตอบรับ distress message ทันที`, `${D9432} 9.2.1 ตัวอย่างการตอบ ROGER MAYDAY`, `${D4444} 12.3.1.8 l) QNH (number)`, `${AIP} ${ad.p218} AD 2.18 ชื่อหน่วย ${ad.app}`],
+      checks: [{ label: "รับทราบด้วย roger mayday", any: ["roger mayday"], crit: true }, { label: "มีคำว่า QNH", any: ["qnh"], crit: true }, { label: `ค่า QNH ${qnh}`, num: qnh, crit: true },
+               { label: `บอกชื่อหน่วย ${ad.app}`, any: ad.appAlt, crit: false }],
+      reply: `roger, QNH ${qnh}, ${csText(cs)}`, replySay: `roger, QNH ${sayQNH(qnh)}, ${csSay(cs)}` };
+  },
+  function panpan(ad) {
+    const cs = newCs(), [type, rwy] = pick(ad.apch), typeWord = type.toLowerCase().replace("/", " ");
+    return { kind: "Urgency · PAN PAN", cs, title: csText(cs), meta: `${ad.app} · ${ad.icao}`,
+      pilot: `PAN PAN, PAN PAN, PAN PAN, ${ad.app}, ${csText(cs)}, passenger with suspected heart attack, request priority landing ${ad.city}`,
+      pilotSay: `Pan Pan, Pan Pan, Pan Pan, ${ad.app}, ${csSay(cs)}, passenger with suspected heart attack, request priority landing ${ad.city}`,
+      ask: `ให้ลำดับแรก (number one) และอนุญาต ${type} approach RWY ${rwy}`,
+      model: `${csText(cs)}, ${ad.app}, number one, cleared ${type} approach runway ${rwy}`,
+      src: [`${D9432} 9.3.1 ตัวอย่างตอบ urgency: NUMBER 1 CLEARED ... APPROACH`, `${D4444} 12.3.3.2 f) CLEARED (type of approach) APPROACH [RUNWAY (number)]`, `${AIP} ${ad.p224} AD 2.24 approach ของ ${ad.icao}`],
+      checks: [{ label: "บอกลำดับ number one", any: ["number 1"], crit: false }, { label: "ใช้คำว่า cleared", any: ["cleared"], crit: true }, { label: `ชนิด approach: ${type}`, any: [typeWord], crit: true },
+               { label: "มีคำว่า approach", any: ["approach"], crit: true }, { label: `runway ${rwy}`, num: parseInt(rwy, 10), crit: true }],
+      reply: `number one, cleared ${type} approach runway ${rwy}, ${csText(cs)}`, replySay: `number one, cleared ${sayApch(type)} approach runway ${sayDigits(rwy)}, ${csSay(cs)}` };
+  },
+  function rcf(ad) {
+    const cs = newCs();
+    return { kind: "Radio failure", cs, title: csText(cs), meta: `${ad.app} · ${ad.icao}`,
+      pilot: "", pilotSay: "",
+      ask: `เรียก ${csText(cs)} ไป 2 ครั้งแล้วไม่มีเสียงตอบ สงสัยวิทยุขัดข้อง บอกว่าไม่ได้รับคำตอบ และสั่งให้ squawk ident ถ้าได้ยิน`,
+      model: `${csText(cs)}, reply not received, if you read squawk ident`,
+      src: [`${D4444} 12.4.1.9 c) REPLY NOT RECEIVED (instructions)`, `${D4444} 12.4.1.9 d) IF YOU READ [manoeuvre instructions or SQUAWK (code or IDENT)]`, `${D4444} 12.4.3.7 a) SQUAWK [(code)] [AND] IDENT`, `${D9432} 9.5.5 นักบินที่วิทยุขัดข้องตั้ง code 7600`],
+      checks: [{ label: "บอก reply not received", any: ["reply not received"], crit: false }, { label: "ใช้ if you read", any: ["if you read"], crit: true }, { label: "สั่ง squawk ident", any: ["squawk ident", "squawk and ident", "ident"], crit: true }],
+      reply: "", sysAfter: "บนจอเห็น IDENT ของเครื่อง แปลว่านักบินได้ยินแต่ส่งไม่ได้" };
+  },
+  function emerDescent(ad) {
+    const cs = newCs(), from = pickFL(200, 250), to = pickFL(130, 150);
+    return { kind: "Emergency descent", cs, title: csText(cs), meta: `${ad.app} · ${ad.icao}`,
+      pilot: `${ad.app}, ${csText(cs)}, emergency descent to flight level ${to}, decompression`,
+      pilotSay: `${ad.app}, ${csSay(cs)}, emergency descent to flight level ${sayFL(to)}, decompression`,
+      ask: `ประกาศเตือนเครื่องอื่นทุกลำแถว ${ad.city} ว่ามี emergency descent จาก FL${pad3(from)}`,
+      model: `Attention all aircraft in the vicinity of ${ad.city}, emergency descent in progress from flight level ${from}`,
+      noCs: true,
+      src: [`${D4444} 12.3.2.5 b) ATTENTION ALL AIRCRAFT IN THE VICINITY OF (location) EMERGENCY DESCENT IN PROGRESS FROM (level)`, `${D9432} 9.4 ตัวอย่างประกาศ emergency descent`],
+      checks: [{ label: "ขึ้นต้น attention all aircraft", any: ["attention all aircraft"], crit: true }, { label: `บอกพื้นที่ (${ad.city})`, any: [ad.city.toLowerCase()], crit: false },
+               { label: "emergency descent in progress", any: ["emergency descent in progress"], crit: true }, { label: `จาก FL${pad3(from)}`, num: from, crit: true }],
+      reply: "" };
+  },
+  function squawkMayday(ad) {
+    const cs = newCs();
+    return { kind: "Distress · emergency code", cs, title: csText(cs), meta: `${ad.app} · ${ad.icao}`,
+      pilot: `MAYDAY MAYDAY MAYDAY, ${ad.app}, ${csText(cs)}, smoke in cockpit, request immediate descent`,
+      pilotSay: `Mayday Mayday Mayday, ${ad.app}, ${csSay(cs)}, smoke in cockpit, request immediate descent`,
+      ask: "รับทราบ MAYDAY แล้ว แต่บนจอยังไม่เห็น code ฉุกเฉิน ให้ขอนักบินตั้ง code ฉุกเฉิน",
+      model: `${csText(cs)}, squawk MAYDAY`,
+      src: [`${D4444} 12.4.3.9 SQUAWK MAYDAY [CODE SEVEN-SEVEN-ZERO-ZERO]`, `${D9432} 9.2.1.2 code ฉุกเฉิน 7700`],
+      checks: [{ label: "สั่ง squawk mayday (หรือ code 7700)", any: ["squawk mayday", "squawk 7700", "code 7700"], crit: true }],
+      reply: `squawk MAYDAY, ${csText(cs)}`, replySay: `squawk Mayday, ${csSay(cs)}` };
+  },
+  function silence(ad) {
+    const cs = newCs(); let other; do { other = newCs(); } while (other.tel === cs.tel && other.num === cs.num);
+    return { kind: "Imposition of silence", cs: other, title: csText(other), meta: `${ad.app} · ${ad.icao}`,
+      pilot: `${ad.app}, ${csText(other)}, request weather ${ad.city}`,
+      pilotSay: `${ad.app}, ${csSay(other)}, request weather ${ad.city}`,
+      ask: `กำลังคุม MAYDAY ของ ${csText(cs)} อยู่ แต่ ${csText(other)} เรียกเข้ามาแทรก สั่ง ${csText(other)} ให้หยุดส่ง`,
+      model: `${csText(other)}, stop transmitting, MAYDAY`,
+      src: [`${A10} 5.3.2.3.1 สถานีที่คุม distress traffic สั่งเงียบด้วย STOP TRANSMITTING ตามด้วย MAYDAY`, `${D9432} 9.2.2 ตัวอย่าง (callsign) STOP TRANSMITTING, MAYDAY`],
+      checks: [{ label: "ใช้ stop transmitting", any: ["stop transmitting"], crit: true }, { label: "ตามด้วย mayday", any: ["mayday"], crit: true }],
+      reply: "" };
+  },
+  function distressEnded(ad) {
+    const cs = newCs();
+    return { kind: "End of distress", cs, title: csText(cs), meta: `${ad.app} · ${ad.icao}`,
+      pilot: `${ad.app}, ${csText(cs)}, cancel distress, engine serviceable`,
+      pilotSay: `${ad.app}, ${csSay(cs)}, cancel distress, engine serviceable`,
+      ask: "นักบินยกเลิก distress แล้ว ให้ประกาศบนความถี่ว่าจบ distress traffic (ถือว่าได้รับอนุญาตจากผู้มีอำนาจแล้ว)",
+      model: `All stations, ${ad.app}, distress traffic ended`, noCs: true,
+      src: [`${A10} 5.3.2.5.3 ประกาศยุติด้วยคำว่า DISTRESS TRAFFIC ENDED`, `${D9432} 9.2.3 ตัวอย่าง ALL STATIONS ... DISTRESS TRAFFIC ENDED`],
+      checks: [{ label: "ขึ้นต้น all stations", any: ["all stations"], crit: true }, { label: `บอกชื่อหน่วย ${ad.app}`, any: ad.appAlt, crit: false }, { label: "distress traffic ended", any: ["distress traffic ended"], crit: true }],
+      reply: "" };
+  }
+];
+
+/* ---------- text normalisation + grading ---------- */
+const W = { zero:0, oh:0, one:1, wun:1, two:2, too:2, three:3, tree:3, four:4, fower:4, five:5, fife:5, six:6, seven:7, eight:8, ait:8, nine:9, niner:9 };
+function norm(text) {
+  let s = " " + String(text).toLowerCase() + " ";
+  s = s.replace(/(\d),(\d{3})/g, "$1$2").replace(/(\d)\.(\d)/g, "$1 decimal $2").replace(/[^a-z0-9\s]/g, " ");
+  s = s.replace(/\bv\s+o\s+r\b/g, "vor").replace(/\br\s+n\s+p\b/g, "rnp").replace(/\bn\s+d\s+b\b/g, "ndb").replace(/\bd\s+m\s+e\b/g, "dme").replace(/\bpoint\b/g, "decimal");
+  s = s.replace(/\bfl(\d+)/g, "flight level $1").replace(/\bfl\b/g, "flight level").replace(/\bflightlevel\b/g, "flight level")
+       .replace(/\bq\s+n\s+h\b/g, "qnh").replace(/\bft\b/g, "feet").replace(/\bfoot\b/g, "feet").replace(/\bkts?\b/g, "knots").replace(/\bknot\b/g, "knots")
+       .replace(/\bhdg\b/g, "heading").replace(/\bdescending\b/g, "descend").replace(/\bclimbing\b/g, "climb").replace(/\breducing\b/g, "reduce").replace(/\bincreasing\b/g, "increase")
+       .replace(/\bmay day\b/g, "mayday").replace(/\bpan-pan\b/g, "pan pan").replace(/\bnumber one\b/g, "number 1");
+  const raw = s.split(/\s+/).filter(Boolean);
+  const toks = [], nums = [];
+  let i = 0;
+  while (i < raw.length) {
+    const t = raw[i];
+    if (t in W || /^\d+$/.test(t)) {
+      let buf = "";
+      while (i < raw.length) {
+        const u = raw[i];
+        if (u in W) { buf += W[u]; i++; }
+        else if (/^\d+$/.test(u)) { if (buf && u.length > 1) break; buf += u; i++; }
+        else break;
+      }
+      let val = parseInt(buf, 10);
+      if (raw[i] === "decimal" && (raw[i + 1] in W || /^\d+$/.test(raw[i + 1] || ""))) {
+        i++; let dec = "";
+        while (i < raw.length && (raw[i] in W || /^\d+$/.test(raw[i]))) { dec += raw[i] in W ? W[raw[i]] : raw[i]; i++; }
+        val = parseFloat(buf + "." + dec);
+      } else if (raw[i] === "thousand") {
+        val *= 1000; i++;
+        if (raw[i] in W && raw[i + 1] === "hundred") { val += W[raw[i]] * 100; i += 2; }
+      } else if (raw[i] === "hundred") { val *= 100; i++; }
+      toks.push(String(val)); nums.push(val);
+    } else { toks.push(t); i++; }
+  }
+  const joined = " " + toks.join(" ") + " ";
+  return { toks, nums, has: p => joined.includes(" " + p + " ") };
+}
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+function callsignState(N, cs) {
+  const tel = cs.tel.toLowerCase(), num = String(cs.num);
+  const isTel = t => t === tel || (t.length >= 4 && lev(t, tel) <= 2);
+  for (let j = 0; j < N.toks.length - 1; j++) if (isTel(N.toks[j]) && N.toks[j + 1] === num) return j === 0 ? "start" : "late";
+  if (N.toks.some(isTel) || N.toks.includes(num)) return "partial";
+  return "none";
+}
+function grade(task, checks, text) {
+  const N = norm(text), items = [];
+  let c = "start";
+  if (!task.noCs) {
+    c = callsignState(N, task.cs);
+    items.push({ label: "เรียก callsign ต้นประโยค", w: 2, crit: true, st: c === "start" ? "ok" : c === "late" ? "part" : "bad",
+      note: { late: "มี callsign แต่ไม่ได้อยู่ต้นประโยค", partial: "callsign ไม่ครบหรือไม่ตรง", none: "ไม่ได้เรียก callsign" }[c] || "" });
+  }
+  const csNum = task.cs.num;
+  for (const ch of checks) {
+    let ok, note = "";
+    if (ch.any) ok = ch.any.some(p => N.has(p));
+    else {
+      ok = N.nums.includes(ch.num);
+      if (!ok) { const other = N.nums.filter(n => n !== csNum); note = other.length ? `ได้ยินค่า ${other.join(", ")}` : "ไม่ได้บอกค่านี้"; }
+    }
+    items.push({ label: ch.label, w: 1, crit: ch.crit, st: ok ? "ok" : "bad", note: ok ? "" : (note || (ch.crit ? "ขาดส่วนนี้" : "ควรใส่ด้วย")) });
+  }
+  let penalty = 0;
+  for (const [word, msg] of (task.wrong || [])) if (N.has(word)) { items.push({ label: msg, w: 0, crit: true, st: "bad", note: "" }); penalty++; }
+  for (const [re, msg] of (task.rawWrong || [])) if (re.test(text)) items.push({ label: msg, w: 1, crit: false, st: "bad", note: "" });
+  const total = items.reduce((s, x) => s + x.w, 0);
+  const earned = items.reduce((s, x) => s + (x.st === "ok" ? x.w : x.st === "part" ? x.w / 2 : 0), 0);
+  const pct = Math.max(0, Math.round((earned - penalty) / total * 100));
+  return { items, pct, c, critFail: items.some(x => x.crit && x.st === "bad") };
+}
+
+/* ---------- stats, favourites, topics (this browser only) ---------- */
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+function recordStat(pct) {
+  const s = store.get("atc-stats", { total: 0, sum: 0, days: {} });
+  s.total++; s.sum += pct; const k = today(); s.days[k] = (s.days[k] || 0) + 1;
+  store.set("atc-stats", s); renderHome();
+}
+let FAVS = store.get("atc-favs", []);
+let SEL = store.get("atc-topics", TOPICS.filter(t => t.k !== "fav").map(t => t.k));
+
+/* ---------- audio ---------- */
+let actx = null;
+function squelch() {
+  if (!$("squelch").checked) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const len = actx.sampleRate * 0.12, buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const src = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
+    f.type = "bandpass"; f.frequency.value = 1800; f.Q.value = 0.8; g.gain.value = 0.12;
+    src.buffer = buf; src.connect(f).connect(g).connect(actx.destination); src.start();
+  } catch (e) {}
+}
+let voices = [], claudeTts = null;
+const CLAUDE_VOICES = ["buttery", "airy", "glassy", "rounded"];
+/* rank voices: natural/neural/online voices first, drop novelty and very robotic ones */
+const BAD_VOICE = /albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|hysterical|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|ralph|kathy|grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley|espeak|compact/i;
+function voiceScore(v) {
+  const n = v.name;
+  let sc = 0;
+  if (/natural|neural|premium|enhanced|online/i.test(n)) sc += 6;
+  if (/^google/i.test(n)) sc += 5;
+  if (/microsoft (libby|ryan|sonia|thomas|guy|aria|jenny|natasha|william|neerja|prabhat|clara|liam)/i.test(n)) sc += 5;
+  if (/samantha|daniel|karen|moira|tessa|rishi|serena|arthur|martha|catherine|gordon|aaron|nicky/i.test(n)) sc += 4;
+  if (!v.localService) sc += 1;
+  return sc;
+}
+function loadVoices() {
+  const sel = $("voice"), prev = sel.value;
+  voices = ("speechSynthesis" in window) ? speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang) && !BAD_VOICE.test(v.name)) : [];
+  voices.sort((a, b) => voiceScore(b) - voiceScore(a));
+  sel.innerHTML = "";
+  const add = (v, l) => { const o = document.createElement("option"); o.value = v; o.textContent = l; sel.append(o); };
+  if (voices.length || claudeTts) add("random", "สุ่มจากเสียงที่ฟังเป็นธรรมชาติ");
+  voices.forEach((v, i) => add("v" + i, `${v.name} (${v.lang})`));
+  if (claudeTts) CLAUDE_VOICES.forEach(v => add("c:" + v, `เสียง Claude: ${v}`));
+  if (!sel.options.length) add("none", "เครื่องนี้ไม่มีเสียงอ่าน (อ่านข้อความแทน)");
+  sel.value = [...sel.options].some(o => o.value === prev) ? prev : sel.options[0].value;
+}
+function chooseVoice() {
+  const v = $("voice").value;
+  if (v !== "random") return v;
+  const best = voices.length ? voiceScore(voices[0]) : 0;
+  const good = voices.map((v, i) => ({ v, i })).filter(x => voiceScore(x.v) >= Math.min(best, 4)).slice(0, 6).map(x => "v" + x.i);
+  const pool = (claudeTts ? CLAUDE_VOICES.map(c => "c:" + c) : []).concat(good.length ? good : voices.slice(0, 1).map((_, i) => "v" + i));
+  return pool.length ? pick(pool) : "none";
+}
+function speak(text, voiceKey) {
+  const rate = parseFloat($("rate").value);
+  squelch();
+  const done = () => setTimeout(squelch, 80);
+  if (voiceKey && voiceKey.startsWith("c:") && claudeTts) return claudeTts.speak(text, { voice: voiceKey.slice(2), rate, language: "en" }).then(done, done);
+  if (!("speechSynthesis" in window) || voiceKey === "none") return Promise.resolve();
+  return new Promise(res => {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = voices[parseInt(String(voiceKey).slice(1), 10)];
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "en-GB";
+    u.rate = rate; u.onend = u.onerror = () => { done(); res(); };
+    setTimeout(() => speechSynthesis.speak(u), 140);
+  });
+}
+function voiceLabel(key) {
+  if (!key || key === "none") return "";
+  if (key.startsWith("c:")) return "Claude " + key.slice(2);
+  const v = voices[parseInt(key.slice(1), 10)]; return v ? v.lang : "";
+}
+
+/* ---------- shared UI helpers ---------- */
+function logTo(box, who, text, cls, hide) {
+  const row = document.createElement("div"); row.className = "tx " + cls;
+  const a = document.createElement("span"); a.className = "who"; a.textContent = who;
+  const b = document.createElement("span"); b.className = "what"; b.textContent = text;
+  if (hide) { b.classList.add("hidden-text"); b.dataset.hide = "1"; }
+  row.append(a, b); box.append(row); return b;
+}
+function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+function renderResult(box, r, src, onCoach) {
+  box.hidden = false; box.innerHTML = "";
+  const sc = el("div", "score"); const num = el("span", "num", r.pct + "%");
+  const vd = el("span", "verdict", r.text || (r.pct === 100 ? "ผ่าน ครบทุกส่วน" : r.pct >= 70 ? "พอใช้ ยังมีจุดต้องแก้" : "ยังไม่ผ่าน"));
+  vd.style.color = r.pct === 100 ? "var(--ok)" : r.pct >= 70 ? "var(--warn)" : "var(--bad)";
+  sc.append(num, vd); box.append(sc);
+  const ul = el("ul", "checks");
+  (r.items || []).forEach(x => { const li = el("li", x.st); li.append(el("span", "m", x.st === "ok" ? "✓" : x.st === "part" ? "~" : "✗"));
+    const d = el("span", null, x.label); if (x.note) d.append(el("small", null, x.note)); li.append(d); ul.append(li); });
+  box.append(ul);
+  const m = el("div"); m.append(el("div", "eyebrow", "รูปแบบที่ถูก"), el("div", "model", r.model)); box.append(m);
+  const s = el("div"); s.append(el("div", "eyebrow", "อ้างอิง")); const su = el("ul", "src"); (src || []).forEach(x => su.append(el("li", null, x))); s.append(su); box.append(s);
+  if (sampleFn && onCoach) {
+    const b = el("button", "sm dark", "ให้พี่เอวิจารณ์"); const c = el("div", "coach"); c.hidden = true;
+    b.onclick = () => onCoach(b, c); box.append(b, c);
+  }
+  recordStat(r.pct);
+}
+
+/* ---------- พี่เอ (Claude via sample) ---------- */
+let sampleFn = null;
+async function askCoach(btn, box, ctx) {
+  box.hidden = false; box.textContent = "พี่เอ: กำลังอ่าน..."; btn.disabled = true;
+  const checks = ctx.items.map(x => `- ${x.label}: ${x.st === "ok" ? "ผ่าน" : x.st === "part" ? "ครึ่งเดียว" : "ไม่ผ่าน"}${x.note ? " (" + x.note + ")" : ""}`).join("\n");
+  const prompt = `คุณคือ "พี่เอ" ครูฝึก ATC ระดับ Approach ดุ เข้มงวด พูดตรง แต่ไม่ดูถูก ตรวจการพูดวิทยุของนักเรียนตามหลัก ICAO
+กติกา:
+- ขึ้นต้นด้วย "พี่เอ:" ตอบภาษาไทยไม่เกิน 6 บรรทัด คง phraseology และ callsign เป็นภาษาอังกฤษ
+- ห้ามแต่งตัวเลข ความถี่ รันเวย์ ชื่อ fix หรือกฎที่ไม่อยู่ในข้อมูลข้างล่าง ถ้าไม่มีในแหล่งให้บอกตรงๆ
+- อ้างอิงได้เฉพาะแหล่งในรายการนี้:
+${ctx.src.join("\n")}
+- ค่า callsign, ระดับ, heading, ความเร็ว, QNH, squawk เป็นค่าสมมติ
+${ctx.pilot ? "นักบินพูด: " + ctx.pilot + "\n" : ""}โจทย์: ${ctx.task}
+รูปแบบที่ถูกตามแหล่งอ้างอิง: ${ctx.model}
+นักเรียนพูดว่า: "${ctx.text}"
+ผลตรวจอัตโนมัติ:
+${checks}
+รูปแบบคำตอบ:
+จุดผิด: ...
+ควรพูด: ...
+ข้อสังเกต: ...`;
+  try { await sampleFn(prompt, { onText: ({ text }) => { box.textContent = text; } }); }
+  catch (e) {
+    box.textContent = e && e.code === "not_granted" ? "ไม่ได้อนุญาตให้ถาม Claude จึงใช้ปุ่มนี้ไม่ได้" : e && e.code === "rate_limited" ? "ถามถี่ไป รอสักครู่แล้วลองใหม่" : "พี่เอตอบไม่ได้ตอนนี้ ลองใหม่อีกครั้ง";
+    if (e && e.code === "not_granted") { sampleFn = null; btn.hidden = true; }
+  } finally { btn.disabled = false; }
+}
+
+/* ---------- HOME ---------- */
+const TIPS = [
+  { h: "FL ที่เป็นหลักร้อยพอดี อ่านว่า HUNDRED", p: "FL180 อ่าน one eight zero แต่ FL200 อ่าน two hundred", s: `${A10} 5.2.1.4.1.2` },
+  { h: "QNH 1000 อ่านว่า ONE THOUSAND", p: "ค่าอื่นอ่านทีละตัว เช่น 1009 อ่าน one zero zero niner", s: `${A10} 5.2.1.4.1.3` },
+  { h: "Squawk หลักพันพอดี อ่านว่า THOUSAND", p: "2400 อ่าน two four zero zero แต่ 2000 อ่าน two thousand", s: `${A10} 5.2.1.4.1.4` },
+  { h: "ความถี่ใช้คำว่า DECIMAL ไม่ใช่ point", p: "119.75 อ่าน one one niner decimal seven five", s: `${A10} 5.2.1.4.1.7` },
+  { h: "ต่ำกว่า TL ใช้ feet ตามด้วย QNH", p: "TL ของ Bangkok FIR คือ FL130 ระดับอ้าง QNH ต้องตามด้วยคำว่า FEET", s: `${AIP} ENR 1.7 2.1.2 / ${D4444} 4.5.7.5.1 Note` },
+  { h: "สิ่งที่นักบินต้อง readback เสมอ", p: "runway-in-use, altimeter setting, SSR code, level, heading, speed และ transition level", s: `${D4444} 4.5.7.5.1 c)` },
+  { h: "ได้ยิน MAYDAY ต้องตอบรับทันที", p: "แล้วคุมความถี่เอง หรือโอนให้ชัดเจนพร้อมบอกนักบิน", s: `${A10} 5.3.2.2.1` }
+];
+let tipI = 0;
+function renderTip() { const t = TIPS[tipI]; $("tipH").textContent = t.h; $("tipP").textContent = t.p; $("tipS").textContent = t.s; $("tipN").textContent = tipI + 1; }
+function renderChart() {
+  const s = store.get("atc-stats", { total: 0, sum: 0, days: {} });
+  const days = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; days.push({ k, d, n: s.days[k] || 0 }); }
+  const max = Math.max(4, ...days.map(x => x.n)); const top = Math.ceil(max / 4) * 4;
+  const X0 = 26, X1 = 296, Y0 = 8, Y1 = 124, bw = 24, step = (X1 - X0) / 7;
+  const ns = "http://www.w3.org/2000/svg", svg = $("chart"); svg.innerHTML = "";
+  const mk = (t, a) => { const n = document.createElementNS(ns, t); for (const k in a) n.setAttribute(k, a[k]); svg.append(n); return n; };
+  for (let g = 0; g <= 4; g++) { const v = top * g / 4, y = Y1 - (Y1 - Y0) * g / 4;
+    mk("line", { x1: X0, x2: X1, y1: y, y2: y, class: "gl" }); mk("text", { x: X0 - 6, y: y + 3, "text-anchor": "end", class: "axis" }).textContent = v; }
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  days.forEach((x, i) => { const cx = X0 + step * i + step / 2, h = (Y1 - Y0) * x.n / top, isT = i === 6;
+    if (x.n) mk("rect", { x: cx - bw / 2, y: Y1 - h, width: bw, height: Math.max(h, 2), rx: 6, class: "bar" + (isT ? " today" : "") });
+    else mk("rect", { x: cx - bw / 2, y: Y1 - 2, width: bw, height: 2, rx: 1, class: "bar" });
+    mk("text", { x: cx, y: 142, "text-anchor": "middle", class: "barlbl" + (isT ? " today" : "") }).textContent = `${x.d.getDate()} ${MON[x.d.getMonth()]}`; });
+  $("totalN").textContent = s.total;
+  $("totalSub").textContent = s.total ? `ข้อ · คะแนนเฉลี่ย ${Math.round(s.sum / s.total)}%` : "ข้อ · เริ่มข้อแรกได้จากปุ่มด้านล่าง";
+}
+function renderChips() {
+  const box = $("chips"); box.innerHTML = "";
+  TOPICS.forEach(t => { const b = el("button", "chip" + (t.alt ? " alt" : ""), t.k === "fav" ? `${t.t} (${FAVS.length})` : t.t);
+    b.setAttribute("aria-pressed", SEL.includes(t.k)); b.onclick = () => {
+      if (SEL.includes(t.k)) { if (SEL.length > 1) SEL = SEL.filter(x => x !== t.k); } else SEL.push(t.k);
+      store.set("atc-topics", SEL); renderChips(); };
+    box.append(b); });
+}
+function renderHome() { renderChart(); renderChips(); }
+
+/* ---------- DRILL ---------- */
+const D = { mode: "issue", task: null, rbVals: null, rbWrong: false, phase: "", n: 0, rbNode: null, last: null };
+function buildTask(spec) {
+  const cs = spec ? spec.cs : newCs();
+  const ad = spec ? AERODROMES.find(a => a.icao === spec.icao) : pick(AERODROMES);
+  const fn = spec ? spec.fn : null;
+  let t, name;
+  const pool = Object.keys(TEMPLATES).filter(k => { const tp = { climb: "level", descendFL: "level", descendAlt: "alt", heading: "heading", speed: "speed", squawk: "squawk", approach: "approach", transfer: "transfer" }[k]; return SEL.includes(tp); });
+  let guard = 0;
+  do { name = fn || pick(pool.length ? pool : Object.keys(TEMPLATES)); t = TEMPLATES[name](cs, ad); guard++; } while (D.mode === "hear" && !t.mutate && !fn && guard < 30);
+  if (spec && spec.vals) t.vals = spec.vals;
+  t.cs = cs; t.ad = ad; t.fn = name; t.voice = chooseVoice(); return t;
+}
+function nextDrill() {
+  let spec = null;
+  if (SEL.includes("fav") && FAVS.length && (SEL.length === 1 || Math.random() < 0.4)) spec = pick(FAVS);
+  D.task = buildTask(spec); D.rbNode = null; D.last = null; D.n = D.n % 10 + 1;
+  $("dResult").hidden = true; $("dTx").value = ""; $("dPartial").textContent = ""; $("dLog").innerHTML = "";
+  const t = D.task;
+  $("dCount").innerHTML = ""; $("dCount").append(String(D.n), el("span", null, "/10"));
+  $("dCs").textContent = csText(t.cs);
+  $("dMeta").textContent = `${t.ad.app} · ${t.ad.icao}${t.cur !== "-" ? " · " + t.cur : ""}`;
+  $("dTags").innerHTML = ""; t.tags.forEach(x => $("dTags").append(el("span", "tag", x)));
+  const fav = FAVS.some(f => f.fn === t.fn && f.cs.num === t.cs.num && JSON.stringify(f.vals) === JSON.stringify(t.vals));
+  $("dStar").setAttribute("aria-pressed", fav); $("dStarLbl").textContent = fav ? "เก็บแล้ว" : "เก็บไว้ทวน";
+  if (D.mode === "issue") {
+    D.phase = "issue"; $("dAsk").textContent = "สั่ง: " + t.thai;
+    logTo($("dLog"), "SYS", "พูดหรือพิมพ์คำสั่งให้นักบิน แล้วกดส่ง", "sys");
+  } else {
+    D.rbWrong = Math.random() < 0.5 && !!t.mutate;
+    D.rbVals = D.rbWrong ? t.mutate(t.vals) : t.vals;
+    if (JSON.stringify(D.rbVals) === JSON.stringify(t.vals)) D.rbWrong = false;
+    D.phase = "judge"; $("dAsk").textContent = "คุณส่งไปแล้ว: " + t.atc(t.vals);
+    logTo($("dLog"), "ATC", t.atc(t.vals), "atc");
+    logTo($("dLog"), "SYS", "กดปุ่มฟังนักบิน แล้วตัดสินว่าทวนถูกหรือไม่", "sys");
+  }
+  setDrillPhase();
+}
+function setDrillPhase() {
+  const hear = D.mode === "hear";
+  $("dHearBox").hidden = !hear || D.phase !== "judge";
+  $("dInput").hidden = hear && D.phase !== "correct";
+  $("dMic").hidden = !dict || (hear && D.phase !== "correct");
+  $("dTx").placeholder = `เช่น ${csText(D.task.cs)}, ...`;
+}
+function drillCoach(b, c) {
+  const t = D.task, L = D.last; if (!L) return;
+  askCoach(b, c, { items: L.g.items, src: t.src, task: L.task, model: L.model, text: L.text });
+}
+async function drillSend() {
+  const text = $("dTx").value.trim(); if (!text) { $("dTx").focus(); return; }
+  const t = D.task;
+  logTo($("dLog"), "ATC", text, "atc"); $("dTx").value = ""; $("dPartial").textContent = "";
+  const g = grade(t, t.checks(t.vals), text), model = t.atc(t.vals);
+  D.last = { text, g, model, task: D.phase === "correct" ? `แก้ readback ผิด: ${t.thai} (นักบินทวนว่า ${t.rbText(D.rbVals)})` : t.thai };
+  renderResult($("dResult"), { ...g, model }, t.src, drillCoach);
+  if (g.c === "none" || g.c === "partial") { logTo($("dLog"), "SYS", "นักบินไม่ตอบ เพราะไม่ได้ยิน callsign ของตัวเอง", "sys"); return; }
+  if (g.critFail) { logTo($("dLog"), "PILOT", `Say again, ${csText(t.cs)}`, "pilot"); await speak(`Say again, ${csSay(t.cs)}`, t.voice); return; }
+  const lbl = voiceLabel(t.voice);
+  logTo($("dLog"), "PILOT", `${t.rbText(t.vals)}, ${csText(t.cs)}` + (lbl ? `  [${lbl}]` : ""), "pilot");
+  D.phase = "done"; setDrillPhase();
+  await speak(`${t.rb(t.vals)}, ${csSay(t.cs)}`, t.voice);
+}
+async function drillPlay() {
+  const t = D.task;
+  if (D.mode === "hear") {
+    if (!D.rbNode) D.rbNode = logTo($("dLog"), "PILOT", `${t.rbText(D.rbVals)}, ${csText(t.cs)}`, "pilot", true);
+    return speak(`${t.rb(D.rbVals)}, ${csSay(t.cs)}`, t.voice);
+  }
+  if (D.phase === "done") return speak(`${t.rb(t.vals)}, ${csSay(t.cs)}`, t.voice);
+  logTo($("dLog"), "SYS", "ในโหมดสั่งการ นักบินจะพูดหลังคุณส่งคำสั่ง", "sys");
+}
+function reveal() { document.querySelectorAll("[data-hide]").forEach(n => n.classList.remove("hidden-text")); }
+async function judge(saidOk) {
+  const t = D.task;
+  if (!D.rbNode) await drillPlay();
+  reveal();
+  const base = { model: `${t.rbText(t.vals)}, ${csText(t.cs)}` };
+  if (saidOk && !D.rbWrong) { D.phase = "done"; setDrillPhase(); renderResult($("dResult"), { ...base, pct: 100, text: "ถูกต้อง readback ตรงกับคำสั่ง", items: [{ st: "ok", label: "ฟังออกว่านักบินทวนถูก" }] }, t.src); return; }
+  if (saidOk && D.rbWrong) { D.phase = "done"; setDrillPhase(); renderResult($("dResult"), { model: t.atc(t.vals), pct: 0, text: "พลาด readback ผิดแต่ปล่อยผ่าน", items: [{ st: "bad", label: "นักบินทวนผิด", note: `นักบินพูด: ${t.rbText(D.rbVals)} / ที่ถูก: ${t.rbText(t.vals)}` }] }, t.src); return; }
+  if (!saidOk && !D.rbWrong) { D.phase = "done"; setDrillPhase(); renderResult($("dResult"), { ...base, pct: 0, text: "จับผิดเกิน readback นี้ถูกแล้ว", items: [{ st: "bad", label: "readback ถูกต้องอยู่แล้ว ไม่ต้องแก้" }] }, t.src); return; }
+  D.phase = "correct"; setDrillPhase();
+  logTo($("dLog"), "SYS", "ถูก readback ผิด พูดแก้ทันที เรียก callsign แล้วสั่งค่าที่ถูกอีกครั้ง (Doc 4444 4.5.7.5.2)", "sys");
+  $("dTx").focus();
+}
+function toggleStar() {
+  const t = D.task, key = f => f.fn === t.fn && f.cs.num === t.cs.num && JSON.stringify(f.vals) === JSON.stringify(t.vals);
+  if (FAVS.some(key)) FAVS = FAVS.filter(f => !key(f)); else FAVS.push({ fn: t.fn, cs: t.cs, icao: t.ad.icao, vals: t.vals });
+  FAVS = FAVS.slice(-50); store.set("atc-favs", FAVS);
+  const on = FAVS.some(key); $("dStar").setAttribute("aria-pressed", on); $("dStarLbl").textContent = on ? "เก็บแล้ว" : "เก็บไว้ทวน"; renderChips();
+}
+
+/* ---------- SCENARIO ---------- */
+const SC = { s: null, voice: null, done: false };
+function nextScenario() {
+  const ad = pick(AERODROMES); let s; do { s = pick(SCENARIOS)(ad); } while (SC.s && s.kind === SC.s.kind && Math.random() < 0.7);
+  SC.s = s; SC.ad = ad; SC.voice = chooseVoice(); SC.done = false;
+  $("sKind").textContent = s.kind; $("sTitle").textContent = s.title; $("sMeta").textContent = s.meta; $("sAsk").textContent = s.ask;
+  $("sLog").innerHTML = ""; $("sResult").hidden = true; $("sTx").value = ""; $("sPartial").textContent = "";
+  if (s.pilot) logTo($("sLog"), "PILOT", s.pilot, "pilot");
+  else logTo($("sLog"), "SYS", `เรียก ${csText(s.cs)} ไปแล้ว 2 ครั้ง ไม่มีเสียงตอบ`, "sys");
+  $("sTx").placeholder = s.noCs ? "เช่น Attention all aircraft ... / All stations ..." : `เช่น ${csText(s.cs)}, ...`;
+}
+function scenPlay() { const s = SC.s; if (s.pilotSay) return speak(s.pilotSay, SC.voice); logTo($("sLog"), "SYS", "โจทย์นี้นักบินไม่ตอบ ลองส่งคำสั่งให้ถูกแบบ", "sys"); }
+async function scenSend() {
+  const text = $("sTx").value.trim(); if (!text) { $("sTx").focus(); return; }
+  const s = SC.s; logTo($("sLog"), "ATC", text, "atc"); $("sTx").value = ""; $("sPartial").textContent = "";
+  const g = grade(s, s.checks, text);
+  renderResult($("sResult"), { ...g, model: s.model }, s.src, (b, c) => askCoach(b, c, { items: g.items, src: s.src, task: s.ask, model: s.model, text, pilot: s.pilot }));
+  if (!s.noCs && (g.c === "none" || g.c === "partial")) { logTo($("sLog"), "SYS", "นักบินไม่ตอบ เพราะไม่ได้ยิน callsign ของตัวเอง", "sys"); return; }
+  if (g.critFail) { if (!s.noCs && s.reply) { logTo($("sLog"), "PILOT", `Say again, ${csText(s.cs)}`, "pilot"); await speak(`Say again, ${csSay(s.cs)}`, SC.voice); } return; }
+  if (s.reply) { logTo($("sLog"), "PILOT", s.reply, "pilot"); await speak(s.replySay, SC.voice); }
+  if (s.sysAfter) logTo($("sLog"), "SYS", s.sysAfter, "sys");
+}
+
+/* ---------- NUMBERS quiz (Annex 10 Vol II 5.2.1.4) ---------- */
+const PLAIN = ["zero","one","two","three","four","five","six","seven","eight","nine"];
+const pDig = n => String(n).split("").map(d => PLAIN[+d]).join(" ");
+const TENS = ["","ten","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+const TEENS = ["ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+const two = n => n < 10 ? PLAIN[n] : n < 20 ? TEENS[n - 10] : TENS[Math.floor(n / 10)] + (n % 10 ? "-" + PLAIN[n % 10] : "");
+const NQ = [
+  () => { const fl = Math.random() < 0.5 ? rand(1, 4) * 100 : pickFL(130, 390); const whole = fl % 100 === 0;
+    const right = `flight level ${whole ? PLAIN[fl / 100] + " hundred" : pDig(fl)}`;
+    const wrong = whole ? [`flight level ${pDig(fl)}`, `flight level ${PLAIN[fl / 100]} zero zero`] : [`flight level ${PLAIN[Math.floor(fl / 100)]} hundred ${two(fl % 100)}`, `flight level ${two(Math.floor(fl / 10))} ${PLAIN[fl % 10]}`];
+    return { kind: "Flight level", val: `FL${pad3(fl)}`, right, wrong, say: `flight level ${sayFL(fl)}`, why: whole ? "FL ที่เป็นหลักร้อยพอดี อ่านเลขหลักร้อยแล้วตามด้วย HUNDRED" : "FL อ่านทีละตัว (ยกเว้นหลักร้อยพอดี)", src: `${A10} 5.2.1.4.1.2` }; },
+  () => { const q = Math.random() < 0.35 ? 1000 : pick([rand(990, 999), rand(1001, 1020)]);
+    const right = `QNH ${q === 1000 ? "one thousand" : pDig(q)}`;
+    const wrong = q === 1000 ? ["QNH one zero zero zero", "QNH ten hundred"] : [`QNH ${q >= 1000 ? "one thousand " + two(q - 1000) : PLAIN[Math.floor(q / 100)] + " hundred " + two(q % 100)}`, `QNH ${q >= 1000 ? "ten " + two(q % 100) : two(Math.floor(q / 10)) + " " + PLAIN[q % 10]}`];
+    return { kind: "QNH (hPa)", val: String(q), right, wrong, say: `QNH ${sayQNH(q)}`, why: "QNH อ่านทีละตัว ยกเว้น 1000 อ่านว่า ONE THOUSAND", src: `${A10} 5.2.1.4.1.3` }; },
+  () => { const c = Math.random() < 0.4 ? pick([1000, 2000, 3000, 4000, 5000, 6000]) : sqCode(); const th = c % 1000 === 0;
+    const right = `squawk ${th ? PLAIN[c / 1000] + " thousand" : pDig(c)}`;
+    const wrong = th ? [`squawk ${pDig(c)}`, `squawk ${two(c / 100)} hundred`] : [`squawk ${two(Math.floor(c / 100))} ${two(c % 100)}`, `squawk ${PLAIN[Math.floor(c / 1000)]} thousand ${pDig(c % 1000)}`];
+    return { kind: "Transponder code", val: String(c), right, wrong, say: `squawk ${saySq(c)}`, why: "code อ่านทีละตัว ยกเว้นหลักพันพอดี อ่านเลขหลักพันแล้วตามด้วย THOUSAND", src: `${A10} 5.2.1.4.1.4` }; },
+  () => { const a = pick([rand(3, 9) * 1000, rand(30, 99) * 100, rand(1, 9) * 100, rand(10, 15) * 1000]);
+    const th = Math.floor(a / 1000), h = Math.floor((a % 1000) / 100);
+    const right = [th ? pDig(th) + " thousand" : "", h ? PLAIN[h] + " hundred" : ""].filter(Boolean).join(" ") + " feet";
+    const wrong = [pDig(a) + " feet", (th >= 10 ? two(th) + " thousand" : th ? PLAIN[th] + " thousand" : "") + (h ? (th ? " " : "") + PLAIN[h] + " hundred" : "") + (th >= 10 ? " feet" : " hundred feet")];
+    if (wrong[1] === right) wrong[1] = `${two(Math.floor(a / 100))} hundred feet`;
+    return { kind: "Altitude", val: `${a.toLocaleString("en-US")} ft`, right, wrong, say: `${sayAlt(a)} feet`, why: "altitude ที่เป็นหลักพัน/หลักร้อยพอดี อ่านเลขแต่ละตัวของหลักพัน ตามด้วย THOUSAND แล้วเลขหลักร้อยตามด้วย HUNDRED", src: `${A10} 5.2.1.4.1.5` }; },
+  () => { const ad = pick(AERODROMES); const f = pick([ad.appFreq, ad.twrFreq]); const [a, b] = f.split(".");
+    return { kind: `ความถี่ ${f === ad.appFreq ? ad.app : ad.twr} (AIP)`, val: f, right: `${pDig(a)} decimal ${pDig(b)}`, wrong: [`${pDig(a)} point ${pDig(b)}`, `${two(+a.slice(0, 2))} ${PLAIN[+a[2]]} decimal ${pDig(b)}`],
+      say: sayFreq(f), why: "ตัวเลขที่มีทศนิยมอ่านทีละตัว และใช้คำว่า DECIMAL แทนจุด", src: `${A10} 5.2.1.4.1.7 / ${AIP} ${ad.p218} AD 2.18` }; },
+  () => { const hdg = rand(1, 36) * 10;
+    return { kind: "Heading", val: pad3(hdg), right: `heading ${pDig(pad3(hdg))}`, wrong: [`heading ${hdg >= 100 ? PLAIN[Math.floor(hdg / 100)] + " hundred" + (hdg % 100 ? " " + two(hdg % 100) : "") : two(hdg)}`, `heading ${two(Math.floor(hdg / 10))} zero`],
+      say: `heading ${sayDigits(pad3(hdg))}`, why: "heading อ่านทีละตัวเสมอ ครบ 3 หลัก", src: `${A10} 5.2.1.4.1.1 / ${D4444} 12.4.1.3` }; }
+];
+const N = { q: null, answered: false };
+function nextNum() {
+  let q; do { q = pick(NQ)(); } while (new Set([q.right, ...q.wrong]).size < 3);
+  N.q = q; N.answered = false;
+  $("nKind").textContent = q.kind; $("nVal").textContent = q.val; $("nExplain").hidden = true;
+  const opts = [q.right, ...q.wrong].sort(() => Math.random() - 0.5), box = $("nOpts"); box.innerHTML = "";
+  opts.forEach(o => { const b = el("button", "opt", o); b.onclick = () => answerNum(b, o); box.append(b); });
+}
+function answerNum(btn, o) {
+  if (N.answered) return; N.answered = true;
+  const q = N.q, ok = o === q.right;
+  [...$("nOpts").children].forEach(b => { if (b.textContent === q.right) b.classList.add("right"); else if (b === btn) b.classList.add("wrong"); b.disabled = b !== btn && b.textContent !== q.right; });
+  const ex = $("nExplain"); ex.hidden = false; ex.innerHTML = "";
+  ex.append(el("b", null, ok ? "ถูก" : "ยังไม่ถูก"), el("span", null, q.why), el("span", "eyebrow", "ออกเสียงแบบ ICAO: " + q.say.toUpperCase()), el("small", null, "อ้างอิง " + q.src));
+  recordStat(ok ? 100 : 0);
+}
+function renderPron() {
+  const P = [["0","ZE-RO"],["1","WUN"],["2","TOO"],["3","TREE"],["4","FOW-er"],["5","FIFE"],["6","SIX"],["7","SEV-en"],["8","AIT"],["9","NIN-er"],[".","DAY-SEE-MAL"],["100","HUN-dred"],["1000","TOU-SAND"]];
+  const box = $("pron"); P.forEach(([n, s]) => { const d = el("div"); d.append(el("b", null, n), s); box.append(d); });
+}
+
+/* ---------- dictation (push to talk, shared by drill + scenario) ---------- */
+let dict = null, dictTarget = null, autoSend = false, useEn = true;
+function micUI(live, label) { ["d", "s"].forEach(p => { $(p + "Mic").classList.toggle("live", live && dictTarget === p); $(p + "MicLbl").textContent = dictTarget === p ? label : "กดพูด"; }); }
+function wireDictation(d) {
+  dict = d; if (!d) return;
+  $("sMic").hidden = false; setDrillPhase();
+  $("dHint").textContent = "กดไมค์หนึ่งครั้งแล้วพูด พูดจบกดอีกครั้ง ระบบจะส่งให้เอง";
+  d.onPartial(({ text }) => { if (dictTarget) $(dictTarget + "Partial").textContent = text; });
+  d.onFinal(({ text }) => { if (!dictTarget) return; const tx = $(dictTarget + "Tx"); tx.value = tx.value ? tx.value + text : text.trimStart(); $(dictTarget + "Partial").textContent = ""; });
+  d.onState(({ state, reason }) => {
+    micUI(state !== "idle", state === "starting" ? "กำลังเปิดไมค์" : state === "listening" ? "พูดจบกดอีกครั้ง" : state === "finishing" ? "กำลังแปลง" : "กดพูด");
+    if (state === "idle") {
+      if (reason === "not_granted" || reason === "unavailable") { dict = null; $("dMic").hidden = true; $("sMic").hidden = true; $("dHint").textContent = "ใช้ไมค์ไม่ได้ในเครื่องนี้ พิมพ์แทนได้"; }
+      const tgt = dictTarget;
+      if (autoSend && tgt && $(tgt + "Tx").value.trim()) { autoSend = false; tgt === "d" ? drillSend() : scenSend(); }
+      autoSend = false;
+    }
+  });
+}
+function micClick(p) {
+  if (!dict) return;
+  if (dict.active()) { autoSend = true; dict.stop().catch(() => {}); return; }
+  dictTarget = p;
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  dict.start(useEn ? { language: "en" } : undefined).catch(e => {
+    if (e && e.code === "unavailable" && useEn) { useEn = false; $("dHint").textContent = "โหมดภาษาอังกฤษใช้ไม่ได้ กดไมค์อีกครั้งเพื่อใช้ภาษาเริ่มต้นของเครื่อง"; }
+    else if (e && e.code === "not_granted") { dict = null; $("dMic").hidden = true; $("sMic").hidden = true; $("dHint").textContent = "ไม่ได้อนุญาตไมค์ พิมพ์แทนได้"; }
+  });
+}
+
+/* ---------- routing ---------- */
+const VIEWS = { home: "v-home", drill: "v-drill", scenario: "v-scen", numbers: "v-num" };
+function route() {
+  const h = (location.hash || "#home").slice(1), v = VIEWS[h] ? h : "home";
+  Object.entries(VIEWS).forEach(([k, id]) => { $(id).hidden = k !== v; });
+  document.querySelectorAll(".tabs a").forEach(a => { if (a.dataset.v === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  if (v === "home") renderHome();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- events ---------- */
+$("tipNext").onclick = () => { tipI = (tipI + 1) % TIPS.length; renderTip(); };
+$("goDrill").onclick = () => { location.hash = "#drill"; };
+$("mIssue").onclick = () => { D.mode = "issue"; $("mIssue").setAttribute("aria-selected", true); $("mHear").setAttribute("aria-selected", false); nextDrill(); };
+$("mHear").onclick = () => { D.mode = "hear"; $("mHear").setAttribute("aria-selected", true); $("mIssue").setAttribute("aria-selected", false); nextDrill(); };
+$("dNext").onclick = nextDrill; $("dSend").onclick = drillSend; $("dPlay").onclick = drillPlay; $("dStar").onclick = toggleStar;
+$("dReveal").onclick = reveal; $("dRbOk").onclick = () => judge(true); $("dRbBad").onclick = () => judge(false);
+$("dTx").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); drillSend(); } });
+$("dMic").onclick = () => micClick("d"); $("sMic").onclick = () => micClick("s");
+$("sNext").onclick = nextScenario; $("sNext2").onclick = nextScenario; $("sPlay").onclick = scenPlay; $("sSend").onclick = scenSend;
+$("sTx").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); scenSend(); } });
+$("nNext").onclick = nextNum; $("nNext2").onclick = nextNum; $("nSay").onclick = () => speak(N.q.say, chooseVoice());
+$("rate").oninput = e => { $("rateV").textContent = e.target.value; };
+if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = loadVoices;
+window.addEventListener("hashchange", route);
+
+loadVoices(); renderTip(); renderPron(); $("sMic").hidden = true; nextDrill(); nextScenario(); nextNum(); route();
+
+/* browser speech recognition, used when the page runs as a normal website (Chrome, Edge, Safari) */
+function webSpeechDict() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  let rec = null, live = false, lastErr = null, stopResolve = null;
+  const cb = { p: () => {}, f: () => {}, s: () => {} };
+  return {
+    onPartial(f) { cb.p = f; }, onFinal(f) { cb.f = f; }, onState(f) { cb.s = f; },
+    active: () => live,
+    start() {
+      return new Promise((res, rej) => {
+        rec = new SR(); rec.lang = "en-US"; rec.interimResults = true; rec.continuous = true; rec.maxAlternatives = 1;
+        rec.onstart = () => { live = true; cb.s({ state: "listening" }); res(); };
+        rec.onresult = e => { let interim = ""; for (let i = e.resultIndex; i < e.results.length; i++) { const r = e.results[i]; if (r.isFinal) cb.f({ text: r[0].transcript.trim() + " " }); else interim += r[0].transcript; } cb.p({ text: interim }); };
+        rec.onerror = e => { lastErr = (e.error === "not-allowed" || e.error === "service-not-allowed") ? "not_granted" : e.error; if (!live) rej({ code: lastErr }); };
+        rec.onend = () => { live = false; cb.s({ state: "idle", reason: lastErr === "not_granted" ? "not_granted" : "stopped" }); lastErr = null; if (stopResolve) { stopResolve(); stopResolve = null; } };
+        cb.s({ state: "starting" });
+        try { rec.start(); } catch (err) { rej({ code: "unavailable" }); }
+      });
+    },
+    stop() { return new Promise(r => { if (!rec || !live) return r(); stopResolve = r; cb.s({ state: "finishing" }); rec.stop(); }); }
+  };
+}
+const C = window.claude;
+if (!(C && C.use)) wireDictation(webSpeechDict());
+if (C && C.use) {
+  C.use("dictation").then(d => wireDictation(d || webSpeechDict())).catch(() => wireDictation(webSpeechDict()));
+  C.use("tts").then(t => { claudeTts = t; if (t) loadVoices(); }).catch(() => {});
+  C.use("sample").then(s => { sampleFn = s; }).catch(() => {});
+}
+window.__rt = { norm, grade, TEMPLATES, SCENARIOS, NQ, sayFL, sayQNH, saySq, sayAlt, sayFreq, AERODROMES };
+})();
+</script>
+
+</body>
+</html>
