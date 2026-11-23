@@ -1587,8 +1587,6 @@ function unitsList() {
       nodes: [{ key: "eng-pilot", t: "พูดแบบนักบิน", icon: "pilot", go: () => { setEngRole("pilot"); location.hash = "#english"; } },
               { key: "eng-atc", t: "ตอบแบบ ATC", icon: "atc", go: () => { setEngRole("atc"); location.hash = "#english"; } }] }
   ];
-  if ($("v-loa")) u.push({ c: "c-mint", n: 5, t: "วิธีปฏิบัติ ศจ.-ศบ.", p: "เอกสารภายใน ใช้ติวส่วนตัวเท่านั้น",
-    nodes: [{ key: "loa", t: "แบบทดสอบ 22 ข้อ", icon: "doc", go: () => { location.hash = "#loa"; } }] });
   if (FAVS.length) u[0].nodes.push({ key: "fav", t: `ทวนข้อที่เก็บไว้ (${FAVS.length})`, icon: "star", go: () => goTopic("fav") });
   return u;
 }
