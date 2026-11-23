@@ -183,12 +183,66 @@ select,input[type=range]{width:100%;font:inherit;color:var(--ink);background:var
 
 /* tab bar */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
-.tabs nav{pointer-events:auto;width:100%;max-width:440px;background:var(--surface);border:1px solid var(--line);border-radius:22px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;gap:4px;box-shadow:0 12px 40px -18px rgba(20,20,60,.45)}
-.tabs a{display:grid;place-items:center;gap:2px;padding:6px 4px;border-radius:16px;color:var(--muted);text-decoration:none;font-size:11.5px;font-weight:500;min-height:52px}
+.tabs nav{pointer-events:auto;width:100%;max-width:520px;background:var(--surface);border:1px solid var(--line);border-radius:22px;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:6px;gap:4px;box-shadow:0 12px 40px -18px rgba(20,20,60,.45)}
+.tabs a{display:grid;place-items:center;gap:2px;padding:6px 2px;white-space:nowrap;border-radius:16px;color:var(--muted);text-decoration:none;font-size:11.5px;font-weight:500;min-height:52px}
 .tabs a svg{width:22px;height:22px}
 .tabs a[aria-current="page"]{background:var(--btn);color:var(--btn-ink)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 @media (prefers-reduced-motion: no-preference){.card,.qcard{animation:pop .35s ease-out}@keyframes pop{from{transform:translateY(8px) rotate(-1.2deg)}}}
+
+/* readability pass (2026-11-23): bigger body text, Thai headings in the text face, higher-contrast small print */
+body{font-size:16px;line-height:1.6}
+.total .sub,.chart .cap{font-size:14px}
+.chart h2{font-size:17px}
+.chart .cap{opacity:.85}
+.chart .axis{font-size:11px;opacity:.8}
+.chart .barlbl{font-family:var(--body);font-size:11.5px}
+.tip .k{font-family:var(--mono);font-size:12px;letter-spacing:.14em}
+.tip h3{font-size:19px;line-height:1.4}
+.tip p{font-size:15px;line-height:1.55}
+.tip .src{font-size:12.5px}
+.prio h2{font-family:var(--body);font-weight:600;font-size:22px}
+.prio p{font-size:14.5px}
+.chip{font-size:15px}
+.seg button{font-size:15px}
+.card .meta{font-size:14px;opacity:.85}
+.card .ask{font-size:17.5px;line-height:1.55;font-weight:500}
+.card .tag{font-size:14px;background:rgba(255,255,255,.4);border-color:transparent}
+.ctl small{font-size:13px}
+textarea{font-size:16px}
+.partial{font-size:14px}
+.hint,.notice{font-size:13.5px;line-height:1.55}
+.tx .who{font-size:11.5px}
+.tx .what{font-size:15px;line-height:1.5}
+.tx.sys .what{font-size:14px}
+.checks li{font-size:15px}
+.checks small{font-size:13.5px}
+.model{font-size:15px}
+.src{font-size:13.5px}
+.coach{font-size:15px;line-height:1.6}
+.explain{font-size:15px}
+.opt{font-size:15px}
+summary{font-size:15px}
+.foot{background:var(--surface);border-radius:22px;padding:14px 16px;font-size:13.5px;line-height:1.6;color:var(--muted)}
+.foot details{border:0;padding:0}
+.tabs a{font-size:12px}
+
+/* ICAO English */
+.card.sky{background:var(--sky);color:var(--sky-ink)}
+.crit{display:grid;gap:10px;margin-top:12px}
+.crit section{display:grid;gap:6px;background:var(--surface-2);border-radius:16px;padding:12px 14px}
+.crit h3{margin:0;font-size:15.5px;font-weight:600}
+.crit dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:14.5px}
+.crit dt{font-family:var(--mono);font-size:12.5px;font-weight:600;padding-top:2px}
+.crit dt.l4{color:var(--ok)}
+.crit dd{margin:0}
+.crit q{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.meter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.meter div{background:var(--surface-2);border-radius:14px;padding:10px;display:grid;gap:2px;text-align:center}
+.meter b{font-family:var(--display);font-size:30px;font-weight:400;line-height:1.1;font-variant-numeric:tabular-nums}
+.meter span{font-size:12.5px;color:var(--muted)}
+.card.sky .count{font-family:var(--body);font-size:14px;font-weight:600;letter-spacing:.02em}
+.card.sky .cs{font-family:var(--body);font-size:28px;font-weight:600;line-height:1.3}
 </style>
 
 <svg class="curves" viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true">
@@ -301,6 +355,47 @@ select,input[type=range]{width:100%;font:inherit;color:var(--ink);background:var
   <p class="hint">โจทย์สุ่มตอนนี้มีเฉพาะสถานการณ์ที่มีแหล่งอ้างอิงตรวจได้: MAYDAY, PAN PAN, สงสัยวิทยุขัดข้อง, emergency descent, ขอ code ฉุกเฉิน, สั่งเงียบความถี่, จบ distress</p>
 </section>
 
+<!-- ENGLISH (ICAO plain language) -->
+<section class="screen" id="v-eng" aria-labelledby="hEng" hidden>
+  <div class="top">
+    <a class="iconbtn" href="#home" aria-label="กลับหน้าภาพรวม"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <h1 id="hEng">ICAO English</h1>
+    <button class="iconbtn" id="eNext" aria-label="โจทย์ใหม่"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+  <div class="seg" role="tablist" aria-label="บทบาท">
+    <button role="tab" id="eRolePilot" aria-selected="true">พูดแบบนักบิน</button>
+    <button role="tab" id="eRoleAtc" aria-selected="false">ตอบแบบ ATC</button>
+  </div>
+  <div class="stack"><div class="back" aria-hidden="true"></div><div class="back b2" aria-hidden="true"></div>
+    <article class="card sky" id="eCard">
+      <div class="count" id="eKind">-</div>
+      <p class="cs" id="eTitle">-</p>
+      <div class="meta" id="eMeta">-</div>
+      <div class="ask" id="eAsk">-</div>
+      <div class="tags" id="eVocab"></div>
+    </article>
+  </div>
+  <div class="controls">
+    <button class="ctl" id="ePlay" aria-label="ฟังเสียงนักบิน"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><small id="ePlayLbl">ฟังนักบิน</small></button>
+    <button class="ctl main" id="eMic" aria-label="กดพูด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><small id="eMicLbl">กดพูด</small></button>
+    <button class="ctl" id="eNext2" aria-label="โจทย์ใหม่"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11l-3-3M20 17H9l3 3"/><path d="M16 7l4 0M4 17h4"/></svg><small>โจทย์ใหม่</small></button>
+  </div>
+  <div class="log">
+    <textarea id="eTx" rows="3" placeholder="พูดหรือพิมพ์เป็นภาษาอังกฤษ" aria-label="ข้อความที่พูด"></textarea>
+    <div class="partial" id="ePartial"></div>
+    <button class="pill" id="eSend">ส่ง</button>
+  </div>
+  <p class="hint" id="eHint">พิมพ์แล้วกดส่งได้ ถ้าใช้ไมค์ แอปจะจับเวลาพูดเพื่อวัดความเร็วให้ด้วย</p>
+  <div class="log" id="eLog" aria-live="polite"></div>
+  <section class="result" id="eResult" hidden></section>
+  <details>
+    <summary>เกณฑ์ ICAO 6 ด้าน (ระดับ 3 / 4 / 5)</summary>
+    <div class="crit" id="eCrit"></div>
+    <p class="hint" style="text-align:left;margin-top:8px">สรุปเป็นภาษาไทยจาก ICAO Language Proficiency Rating Scale (Doc 9835 ฉบับที่ 2) คำในเครื่องหมายคำพูดยกมาจากต้นฉบับ ระดับ 4 คือระดับต่ำสุดที่ใช้ทำงานได้</p>
+  </details>
+  <p class="notice">ใช้ฝึกเท่านั้น คะแนนในหน้านี้ไม่ใช่ผลสอบ การสอบจริงต้องสอบกับศูนย์ทดสอบที่ กพท. รับรอง</p>
+</section>
+
 <!-- NUMBERS -->
 <section class="screen" id="v-num" aria-labelledby="hNum" hidden>
   <div class="top">
@@ -341,6 +436,7 @@ select,input[type=range]{width:100%;font:inherit;color:var(--ink);background:var
   <a href="#home" data-v="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>ภาพรวม</a>
   <a href="#drill" data-v="drill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>ซ้อมสั่ง</a>
   <a href="#scenario" data-v="scenario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>โจทย์สุ่ม</a>
+  <a href="#english" data-v="english"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>อังกฤษ</a>
   <a href="#numbers" data-v="numbers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/></svg>ตัวเลข</a>
 </nav></div>
 
@@ -828,7 +924,7 @@ function renderChart() {
   days.forEach((x, i) => { const cx = X0 + step * i + step / 2, h = (Y1 - Y0) * x.n / top, isT = i === 6;
     if (x.n) mk("rect", { x: cx - bw / 2, y: Y1 - h, width: bw, height: Math.max(h, 2), rx: 6, class: "bar" + (isT ? " today" : "") });
     else mk("rect", { x: cx - bw / 2, y: Y1 - 2, width: bw, height: 2, rx: 1, class: "bar" });
-    mk("text", { x: cx, y: 142, "text-anchor": "middle", class: "barlbl" + (isT ? " today" : "") }).textContent = `${x.d.getDate()} ${MON[x.d.getMonth()]}`; });
+    mk("text", { x: cx, y: 142, "text-anchor": "middle", class: "barlbl" + (isT ? " today" : "") }).textContent = isT ? "วันนี้" : String(x.d.getDate()); });
   $("totalN").textContent = s.total;
   $("totalSub").textContent = s.total ? `ข้อ · คะแนนเฉลี่ย ${Math.round(s.sum / s.total)}%` : "ข้อ · เริ่มข้อแรกได้จากปุ่มด้านล่าง";
 }
@@ -1010,21 +1106,222 @@ function renderPron() {
   const box = $("pron"); P.forEach(([n, s]) => { const d = el("div"); d.append(el("b", null, n), s); box.append(d); });
 }
 
-/* ---------- dictation (push to talk, shared by drill + scenario) ---------- */
+/* ---------- ICAO ENGLISH (plain language practice) ----------
+   Message elements: Annex 10 Vol II 5.3.2.1.1 (distress), 5.3.3.1.1 (urgency), 5.3.3.2.1 a) (acknowledge urgency).
+   Plain language only when phraseology cannot serve: Annex 10 Vol II 5.1.1.1, Doc 9432 3.2.
+   Rating scale wording: ICAO Language Proficiency Rating Scale, Doc 9835 (2nd ed.).
+   Callsigns, levels, distances and headings are fictional training values. */
+const RS = "ICAO Language Proficiency Rating Scale (Doc 9835, 2nd ed.)";
+const PL_SRC = `${A10} 5.1.1.1 ใช้ plain language เมื่อไม่มี phraseology รองรับ / ${D9432} 3.2`;
+const APP_NOTE = "เกณฑ์ฝึกของแอป ไม่ใช่เกณฑ์สอบ";
+const DIRS = [["north", "ทิศเหนือ"], ["south", "ทิศใต้"], ["east", "ทิศตะวันออก"], ["west", "ทิศตะวันตก"]];
+const NUMW = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty"];
+const ePt = {
+  station: ad => ({ label: "เรียกหน่วยที่ติดต่อ", test: r => ad.appAlt.some(a => r.includes(a)) || /\bapproach\b/.test(r) }),
+  cs: cs => ({ label: "บอก callsign ของตัวเอง", test: (r, N) => callsignState(N, cs) !== "none" && N.toks.includes(String(cs.num)) }),
+  csAtc: cs => ({ label: "เรียก callsign นักบินต้นประโยค", test: (r, N) => callsignState(N, cs) === "start" }),
+  pos: () => ({ label: "บอกตำแหน่ง ระดับ และ heading", test: (r, N) => [/miles?|\bnm\b|position/, /flight level|feet|\blevel\b/, /heading/].filter(x => x.test(N.toks.join(" "))).length >= 2 }),
+  ack: () => ({ label: "รับทราบข้อความ (roger / copied)", test: r => /\b(roger|copied|copy|understood|acknowledged?)\b/.test(r) }),
+  ask: () => ({ label: "ถามข้อมูลที่ต้องรู้", test: r => /\?|\b(say|confirm|advise|do you|are you|is the|how many|what|which|any)\b/.test(r) }),
+  act: () => ({ label: "บอกว่าจะทำอะไรหรือให้อะไร", test: r => /\b(will|expect|cleared|turn|descend|climb|continue|stand ?by|vectors?|priority|ambulance|emergency services|pass|inform|hold|approved|unable)\b/.test(r) })
+};
+function engScene(role) {
+  const ad = pick(AERODROMES), cs = newCs(), fl = pickFL(130, 250), hdg = pad3(rand(1, 36) * 10), d = rand(12, 40), dir = pick(DIRS);
+  const posEn = `${d} miles ${dir[0]} of ${ad.city}, flight level ${fl}, heading ${hdg}`;
+  const posTh = `ห่าง ${ad.city} ${d} ไมล์ ${dir[1]} ที่ FL${fl} heading ${hdg}`;
+  const P = [
+    () => ({ kind: "PAN PAN · เจ็บป่วย", title: "ผู้โดยสารเจ็บหน้าอก",
+      ask: `คุณคือนักบิน ${posTh} ผู้โดยสารชายเจ็บหน้าอกรุนแรงและหายใจลำบาก กัปตันตัดสินใจกลับไปลงที่ ${ad.city} และอยากให้มีรถพยาบาลรอ แจ้ง ${ad.app} เป็นภาษาอังกฤษ`,
+      vocab: ["chest pain", "difficulty breathing", "priority landing", "ambulance on arrival"],
+      points: [{ label: "ขึ้นต้น PAN PAN", test: r => /pan\s*pan/.test(r) }, ePt.station(ad), ePt.cs(cs),
+        { label: "บอกลักษณะเหตุ (ผู้โดยสาร อาการ)", test: r => /(passenger|pax)/.test(r) && /(chest|heart|breath|unconscious|sick|ill|medical|pain)/.test(r) },
+        { label: "บอกความตั้งใจของกัปตัน", test: r => /\b(return|returning|divert|diverting|land|landing)\b/.test(r) },
+        ePt.pos(), { label: "ข้อมูลอื่นที่เป็นประโยชน์ (รถพยาบาล)", test: r => /(ambulance|medical (assistance|services|team)|doctor|paramedic)/.test(r) }],
+      model: `PAN PAN, PAN PAN, PAN PAN, ${ad.app}, ${csText(cs)}, we have a male passenger with severe chest pain and difficulty breathing. We intend to return to ${ad.city} and request a priority landing, with an ambulance on arrival. Position ${posEn}.`,
+      src: [`${A10} 5.3.3.1.1 องค์ประกอบข้อความ urgency`, PL_SRC] }),
+    () => ({ kind: "PAN PAN · ชนนก", title: "กระจกหน้าร้าวหลังชนนก",
+      ask: `คุณคือนักบิน ${posTh} ระหว่างไต่ชนนก กระจกหน้าฝั่งกัปตันร้าวแต่ยังไม่ทะลุ ห้องโดยสารยังปกติ กัปตันจะกลับไปลงที่ ${ad.city} แจ้ง ${ad.app}`,
+      vocab: ["bird strike", "cracked windshield", "cabin pressure normal", "return to"],
+      points: [{ label: "ขึ้นต้น PAN PAN", test: r => /pan\s*pan/.test(r) }, ePt.station(ad), ePt.cs(cs),
+        { label: "บอกลักษณะเหตุ (ชนนก กระจกร้าว)", test: r => /bird/.test(r) && /(windshield|windscreen|crack)/.test(r) },
+        { label: "บอกความตั้งใจของกัปตัน", test: r => /\b(return|returning|divert|land|landing)\b/.test(r) }, ePt.pos()],
+      model: `PAN PAN, PAN PAN, PAN PAN, ${ad.app}, ${csText(cs)}, we had a bird strike on climb. The captain's windshield is cracked but intact, and cabin pressure is normal. We intend to return to ${ad.city}. Position ${posEn}.`,
+      src: [`${A10} 5.3.3.1.1 องค์ประกอบข้อความ urgency`, PL_SRC] }),
+    () => ({ kind: "MAYDAY · ควันในห้องโดยสาร", title: "มีควันจากห้องน้ำท้ายเครื่อง",
+      ask: `คุณคือนักบิน ${posTh} ลูกเรือแจ้งว่ามีควันออกจากห้องน้ำท้ายเครื่อง กำลังใช้ถังดับเพลิง กัปตันจะลดระดับและลงที่ ${ad.city} ทันที ประกาศ MAYDAY กับ ${ad.app}`,
+      vocab: ["smoke in the cabin", "rear lavatory", "fire extinguisher", "immediate descent"],
+      points: [{ label: "ขึ้นต้น MAYDAY", test: r => /mayday/.test(r) }, ePt.station(ad), ePt.cs(cs),
+        { label: "บอกลักษณะเหตุ (ควัน ไฟ)", test: r => /(smoke|fire|burning)/.test(r) },
+        { label: "บอกความตั้งใจของกัปตัน", test: r => /\b(descend|descending|descent|divert|diverting|land|landing|return)\b/.test(r) }, ePt.pos()],
+      model: `MAYDAY, MAYDAY, MAYDAY, ${ad.app}, ${csText(cs)}, smoke in the cabin from the rear lavatory, the crew are using a fire extinguisher. We are descending and intend to land at ${ad.city} immediately. Position ${posEn}.`,
+      src: [`${A10} 5.3.2.1.1 องค์ประกอบข้อความ distress`, PL_SRC] }),
+    () => ({ kind: "MAYDAY · เครื่องยนต์", title: "เครื่องยนต์ขวาดับ",
+      ask: `คุณคือนักบินเครื่องสองเครื่องยนต์ ${posTh} เครื่องยนต์ขวาดับ กัปตันตัดสินใจประกาศ MAYDAY และจะลงที่ ${ad.city} แจ้ง ${ad.app}`,
+      vocab: ["engine failure", "right engine", "single engine", "unable to maintain"],
+      points: [{ label: "ขึ้นต้น MAYDAY", test: r => /mayday/.test(r) }, ePt.station(ad), ePt.cs(cs),
+        { label: "บอกลักษณะเหตุ (เครื่องยนต์ดับ)", test: r => /engine/.test(r) && /(fail|failure|shut|flame ?out|lost|inoperative)/.test(r) },
+        { label: "บอกความตั้งใจของกัปตัน", test: r => /\b(divert|diverting|land|landing|return|returning|descend)\b/.test(r) }, ePt.pos()],
+      model: `MAYDAY, MAYDAY, MAYDAY, ${ad.app}, ${csText(cs)}, right engine failure. We intend to land at ${ad.city}. Position ${posEn}.`,
+      src: [`${A10} 5.3.2.1.1 องค์ประกอบข้อความ distress`, PL_SRC] }),
+    () => ({ kind: "Plain language · อากาศ", title: "ขอหลบเมฆฝนข้างหน้า",
+      ask: `คุณคือนักบิน ${posTh} เรดาร์เห็นเมฆฝนฟ้าคะนองข้างหน้า อยากขอเบี่ยงไปทางซ้าย 20 องศาจากเส้นทาง ขอ ${ad.app}`,
+      vocab: ["thunderstorm ahead", "deviate", "left of track", "degrees"],
+      points: [ePt.station(ad), ePt.cs(cs),
+        { label: "บอกเหตุผล (อากาศ)", test: r => /(weather|cb|cumulonimbus|cloud|storm|thunderstorm|turbulence)/.test(r) },
+        { label: "ใช้คำขอชัดเจน (request)", test: r => /request/.test(r) },
+        { label: "บอกทิศและขนาดที่ต้องการ", test: (r, N) => /\bleft\b/.test(r) && N.toks.includes("20") }],
+      model: `${ad.app}, ${csText(cs)}, thunderstorm ahead on our weather radar. Request to deviate 20 degrees left of track.`,
+      src: [PL_SRC, APP_NOTE] }),
+    () => ({ kind: "Plain language · ผู้โดยสาร", title: "ผู้โดยสารก่อความวุ่นวาย",
+      ask: `คุณคือนักบิน ${posTh} กำลังจะลงที่ ${ad.city} ผู้โดยสารเมาและทำร้ายลูกเรือ ลูกเรือควบคุมตัวไว้แล้ว อยากให้ตำรวจรอที่หลุมจอด แจ้ง ${ad.app}`,
+      vocab: ["disruptive passenger", "restrained", "police", "on arrival"],
+      points: [ePt.station(ad), ePt.cs(cs),
+        { label: "บอกลักษณะเหตุ (ผู้โดยสารก่อเหตุ)", test: r => /(unruly|disruptive|aggressive|drunk|violent|assault|attacked)/.test(r) },
+        { label: "บอกสถานะตอนนี้ (ควบคุมตัวแล้ว)", test: r => /(restrain|under control|controlled|secured)/.test(r) },
+        { label: "บอกสิ่งที่ต้องการ (ตำรวจ)", test: r => /(police|security)/.test(r) }],
+      model: `${ad.app}, ${csText(cs)}, we have a drunk passenger who assaulted a cabin crew member. The passenger is now restrained. Request police to meet the aircraft on arrival at ${ad.city}.`,
+      src: [PL_SRC, APP_NOTE] })
+  ];
+  const n = rand(3, 6), alt = rand(2, 4) * 1000;
+  const A = [
+    () => ({ kind: "ตอบนักบิน · เลเซอร์", title: "นักบินโดนเลเซอร์ส่อง",
+      pilot: `${ad.app}, ${csText(cs)}, we were just illuminated by a green laser from the ground, about ${n} miles south of the field. Crew is okay, continuing approach.`,
+      pilotSay: `${ad.app}, ${csSay(cs)}, we were just illuminated by a green laser from the ground, about ${NUMW[n]} miles south of the field. Crew is okay, continuing approach.`,
+      ask: "ฟังนักบินแล้วตอบเป็นภาษาอังกฤษ: รับทราบ ถามสิ่งที่ต้องรู้ และบอกว่าคุณจะทำอะไรต่อ",
+      vocab: ["laser illumination", "any injury", "pass the information"],
+      points: [ePt.csAtc(cs), ePt.ack(), ePt.ask(), ePt.act()],
+      model: `${csText(cs)}, roger, laser report copied. Confirm no crew injury and you are able to continue the approach? I will pass the information on.`,
+      src: [PL_SRC, APP_NOTE + " · ตัวอย่างการใช้ภาษา ไม่ใช่ขั้นตอนปฏิบัติ"] }),
+    () => ({ kind: "ตอบนักบิน · โดรน", title: "นักบินเห็นโดรนบน final",
+      pilot: `${ad.app}, ${csText(cs)}, we just saw a drone on final, about ${n} miles out at ${alt} feet. It passed close on our right side.`,
+      pilotSay: `${ad.app}, ${csSay(cs)}, we just saw a drone on final, about ${NUMW[n]} miles out at ${sayAlt(alt)} feet. It passed close on our right side.`,
+      ask: "ตอบนักบิน: รับทราบ ถามรายละเอียดเพิ่ม (เช่น ขนาด สี) และบอกสิ่งที่จะทำ",
+      vocab: ["drone sighting", "size and colour", "advise other traffic"],
+      points: [ePt.csAtc(cs), ePt.ack(), ePt.ask(), ePt.act()],
+      model: `${csText(cs)}, roger, drone report copied. Can you advise the size and colour of the drone? I will pass the information to the following traffic.`,
+      src: [PL_SRC, APP_NOTE + " · ตัวอย่างการใช้ภาษา ไม่ใช่ขั้นตอนปฏิบัติ"] }),
+    () => ({ kind: "ตอบนักบิน · PAN PAN", title: "นักบินแจ้งผู้โดยสารป่วย",
+      pilot: `PAN PAN, PAN PAN, PAN PAN, ${ad.app}, ${csText(cs)}, a passenger is unconscious. We request to return to ${ad.city} and an ambulance on arrival.`,
+      pilotSay: `Pan pan, pan pan, pan pan, ${ad.app}, ${csSay(cs)}, a passenger is unconscious. We request to return to ${ad.city} and an ambulance on arrival.`,
+      ask: "ตอบนักบิน: รับทราบข้อความ urgency ถามสิ่งที่ต้องรู้ และบอกสิ่งที่จะทำ",
+      vocab: ["PAN PAN copied", "ambulance", "expect"],
+      points: [ePt.csAtc(cs), { ...ePt.ack(), label: "รับทราบข้อความ urgency" }, ePt.ask(), ePt.act()],
+      model: `${csText(cs)}, roger PAN PAN. Ambulance will be requested. Advise if you need any other assistance.`,
+      src: [`${A10} 5.3.3.2.1 a) ต้องรับทราบข้อความ urgency`, PL_SRC, APP_NOTE] }),
+    () => ({ kind: "ตอบนักบิน · ขอบินวน", title: "นักบินขอเวลาทำ checklist",
+      pilot: `${ad.app}, ${csText(cs)}, we have a hydraulic problem. Request to hold for about ten minutes to run our checklist before the approach.`,
+      pilotSay: `${ad.app}, ${csSay(cs)}, we have a hydraulic problem. Request to hold for about ten minutes to run our checklist before the approach.`,
+      ask: "ตอบนักบิน: รับทราบ ถามว่าต้องการความช่วยเหลืออะไร และบอกสิ่งที่ให้ได้",
+      vocab: ["hydraulic problem", "checklist", "advise when ready"],
+      points: [ePt.csAtc(cs), ePt.ack(), ePt.ask(), ePt.act()],
+      model: `${csText(cs)}, roger. Do you require any assistance? Holding is approved, advise when ready for the approach.`,
+      src: [PL_SRC, APP_NOTE + " · ตัวอย่างการใช้ภาษา ไม่ใช่ขั้นตอนปฏิบัติ"] })
+  ];
+  const s = pick(role === "atc" ? A : P)();
+  return { ...s, role, ad, cs, meta: `${ad.app} · ${ad.icao}` };
+}
+
+const E = { role: "pilot", s: null, voice: null, t0: 0, ms: 0 };
+function nextEng() {
+  let s; do { s = engScene(E.role); } while (E.s && s.title === E.s.title && Math.random() < 0.8);
+  E.s = s; E.voice = chooseVoice(); E.ms = 0;
+  $("eKind").textContent = s.kind; $("eTitle").textContent = s.title; $("eMeta").textContent = s.meta; $("eAsk").textContent = s.ask;
+  const tg = $("eVocab"); tg.innerHTML = ""; s.vocab.forEach(v => tg.append(el("span", "tag", v)));
+  $("eLog").innerHTML = ""; $("eResult").hidden = true; $("eTx").value = ""; $("ePartial").textContent = "";
+  $("ePlay").hidden = s.role !== "atc";
+  if (s.pilot) logTo($("eLog"), "PILOT", s.pilot, "pilot", E.voice !== "none");
+  $("eTx").placeholder = s.role === "atc" ? `${csText(s.cs)}, roger ...` : `${s.ad.app}, ${csText(s.cs)}, ...`;
+}
+function engPlay() { const s = E.s; if (!s.pilotSay) return; document.querySelectorAll("#eLog [data-hide]").forEach(n => n.dataset.played = "1"); return speak(s.pilotSay, E.voice); }
+function engTiming(state) {
+  if (state === "listening") E.t0 = performance.now();
+  else if ((state === "finishing" || state === "idle") && E.t0) { E.ms += performance.now() - E.t0; E.t0 = 0; }
+}
+function engMeasure(text) {
+  const words = (text.match(/[A-Za-z0-9']+/g) || []).length;
+  const fillers = (text.toLowerCase().match(/\b(uh+|um+|er+|erm|ah+|eh+|hmm+)\b/g) || []).length;
+  const thai = /[฀-๿]/.test(text);
+  const wpm = E.ms > 1500 ? Math.round(words / (E.ms / 60000)) : null;
+  return { words, fillers, thai, wpm };
+}
+function engSend() {
+  const text = $("eTx").value.trim(); if (!text) { $("eTx").focus(); return; }
+  const s = E.s, r = " " + text.toLowerCase() + " ", N = norm(text), m = engMeasure(text);
+  logTo($("eLog"), s.role === "atc" ? "ATC" : "PILOT", text, s.role === "atc" ? "atc" : "pilot");
+  $("eTx").value = ""; $("ePartial").textContent = "";
+  document.querySelectorAll("#eLog [data-hide]").forEach(n => n.classList.remove("hidden-text"));
+  const items = s.points.map(p => ({ label: p.label, st: p.test(r, N) ? "ok" : "bad" }));
+  if (m.thai) items.push({ label: "พูดเป็นภาษาอังกฤษทั้งหมด", st: "bad", note: "มีภาษาไทยปนในข้อความ" });
+  const pct = Math.round(100 * items.filter(x => x.st === "ok").length / items.length);
+  const box = $("eResult");
+  renderResult(box, { pct, items, model: s.model, text: pct === 100 ? "ครบทุกเรื่องที่ควรสื่อสาร" : pct >= 70 ? "ส่วนใหญ่ครบ ยังขาดบางเรื่อง" : "ยังขาดข้อมูลสำคัญ" }, s.src,
+    (b, c) => engCoach(b, c, { s, text, items, m }));
+  const mt = el("div", "meter");
+  [[m.words, "คำ"], [m.wpm == null ? "–" : m.wpm, "คำต่อนาที"], [m.fillers, "คำเติม uh/um"]].forEach(([v, l]) => { const d = el("div"); d.append(el("b", null, String(v)), el("span", null, l)); mt.append(d); });
+  box.insertBefore(mt, box.children[1]);
+  const note = el("p", "hint", m.wpm == null ? "ความเร็วพูดวัดได้เมื่อใช้ไมค์เท่านั้น" : "ความเร็วพูดวัดจากเวลาที่เปิดไมค์ ใช้ดูแนวโน้มของตัวเอง ไม่ใช่เกณฑ์สอบ");
+  note.style.textAlign = "left"; box.insertBefore(note, mt.nextSibling);
+  E.ms = 0;
+}
+async function engCoach(btn, box, ctx) {
+  box.hidden = false; box.textContent = "พี่เอ: กำลังอ่าน..."; btn.disabled = true;
+  const { s, text, items, m } = ctx;
+  const prompt = `คุณคือ "พี่เอ" ครูสอน ICAO English สำหรับนักบินและ ATC ดุ ตรง แต่ไม่ดูถูก
+กติกา:
+- ขึ้นต้นด้วย "พี่เอ:" ตอบภาษาไทยไม่เกิน 9 บรรทัด ยกคำอังกฤษที่นักเรียนพูดมาตรงๆ เมื่อชี้จุดผิด
+- นี่คือการฝึก ห้ามบอกว่าเป็นผลสอบหรือระดับทางการ ให้พูดว่า "ประมาณการเพื่อฝึก"
+- ประเมินจากข้อความที่ถอดได้เท่านั้น ห้ามประเมิน Pronunciation เพราะไม่ได้ยินเสียงจริง ให้บอกว่าประเมินไม่ได้
+- ใช้เกณฑ์ ${RS}: Structure, Vocabulary, Fluency, Comprehension, Interactions ระดับ 3/4/5
+- ห้ามแต่งตัวเลข ความถี่ ขั้นตอน หรือกฎที่ไม่อยู่ในข้อมูลข้างล่าง ค่าตัวเลขในโจทย์เป็นค่าสมมติ
+บทบาทนักเรียน: ${s.role === "atc" ? "ATC ตอบนักบิน" : "นักบินแจ้ง ATC"}
+${s.pilot ? "นักบินพูด: " + s.pilot + "\n" : ""}โจทย์: ${s.ask}
+นักเรียนพูด: "${text}"
+ข้อมูลวัดได้: ${m.words} คำ, ${m.wpm == null ? "ไม่ได้วัดความเร็ว (พิมพ์)" : m.wpm + " คำต่อนาที"}, คำเติม ${m.fillers} ครั้ง
+ผลตรวจเนื้อหาอัตโนมัติ:
+${items.map(x => `- ${x.label}: ${x.st === "ok" ? "มี" : "ไม่มี"}`).join("\n")}
+ตัวอย่างคำตอบที่ดี: ${s.model}
+รูปแบบคำตอบ:
+ระดับประมาณการ: Structure x / Vocabulary x / Fluency x / Comprehension x / Interactions x (Pronunciation ประเมินไม่ได้)
+จุดที่ต้องแก้: ...
+ลองพูดใหม่แบบนี้: ...`;
+  try { await sampleFn(prompt, { onText: ({ text }) => { box.textContent = text; } }); }
+  catch (e) {
+    box.textContent = e && e.code === "not_granted" ? "ไม่ได้อนุญาตให้ถาม Claude จึงใช้ปุ่มนี้ไม่ได้" : e && e.code === "rate_limited" ? "ถามถี่ไป รอสักครู่แล้วลองใหม่" : "พี่เอตอบไม่ได้ตอนนี้ ลองใหม่อีกครั้ง";
+    if (e && e.code === "not_granted") { sampleFn = null; btn.hidden = true; }
+  } finally { btn.disabled = false; }
+}
+const CRIT = [
+  ["Pronunciation · การออกเสียง", [["L3", "การออกเสียง เน้นเสียง จังหวะ ทำให้ฟังเข้าใจยากบ่อยครั้ง", "frequently interfere with ease of understanding"], ["L4", "ทำให้ฟังเข้าใจยากเป็นบางครั้งเท่านั้น", "only sometimes interfere with ease of understanding"], ["L5", "แทบไม่ทำให้ฟังเข้าใจยาก", "rarely interfere with ease of understanding"]]],
+  ["Structure · โครงสร้างประโยค", [["L3", "ไวยากรณ์พื้นฐานในสถานการณ์ที่คาดได้ ยังคุมได้ไม่สม่ำเสมอ", "are not always well controlled"], ["L4", "ไวยากรณ์พื้นฐานคุมได้ดีเป็นส่วนใหญ่ ผิดได้บ้าง", "usually well controlled"], ["L5", "คุมได้ดีสม่ำเสมอ และลองใช้ประโยคซับซ้อน", "consistently well controlled"]]],
+  ["Vocabulary · คำศัพท์", [["L3", "คลังคำจำกัด เลือกคำไม่เหมาะบ่อย", "range is limited and the word choice often inappropriate"], ["L4", "ไม่รู้คำไหน มักพูดอ้อมแทนได้สำเร็จ", "Can often paraphrase successfully when lacking vocabulary"], ["L5", "พูดอ้อมแทนได้สำเร็จสม่ำเสมอ", "Paraphrases consistently and successfully."]]],
+  ["Fluency · ความคล่อง", [["L3", "ติดขัดหรือช้าจนสื่อสารไม่ได้ผล", "Hesitations or slowness in language processing may prevent effective communication."], ["L4", "พูดต่อเนื่องได้เป็นช่วงด้วยจังหวะที่เหมาะ", "Produces stretches of language at an appropriate tempo."], ["L5", "พูดได้ยาวและค่อนข้างสบายในเรื่องที่คุ้นเคย", "Able to speak at length with relative ease on familiar topics"]]],
+  ["Comprehension · ความเข้าใจ", [["L3", "เข้าใจถูกบ่อยครั้ง ในเรื่องทั่วไปและเรื่องงาน", "Comprehension is often accurate"], ["L4", "เข้าใจถูกเป็นส่วนใหญ่", "Comprehension is mostly accurate"], ["L5", "เข้าใจถูกต้อง", "Comprehension is accurate"]]],
+  ["Interactions · การโต้ตอบ", [["L3", "ตอบทันที เหมาะสม และได้ข้อมูล เป็นบางครั้ง", "Responses are sometimes immediate, appropriate, and informative."], ["L4", "ตอบทันที เหมาะสม และได้ข้อมูล เป็นส่วนใหญ่", "Responses are usually immediate, appropriate, and informative."], ["L5", "ตอบทันที เหมาะสม และได้ข้อมูล", "Responses are immediate, appropriate, and informative."]]]
+];
+function renderCrit() {
+  const box = $("eCrit"); box.innerHTML = "";
+  CRIT.forEach(([h, rows]) => { const sec = el("section"); sec.append(el("h3", null, h)); const dl = el("dl");
+    rows.forEach(([l, th, q]) => { dl.append(el("dt", l === "L4" ? "l4" : null, l)); const dd = el("dd", null, th + " "); dd.append(el("q", null, q)); dl.append(dd); });
+    sec.append(dl); box.append(sec); });
+}
+function setEngRole(r) { E.role = r; $("eRolePilot").setAttribute("aria-selected", r === "pilot"); $("eRoleAtc").setAttribute("aria-selected", r === "atc"); nextEng(); }
+
+/* ---------- dictation (push to talk, shared by drill + scenario + english) ---------- */
 let dict = null, dictTarget = null, autoSend = false, useEn = true;
-function micUI(live, label) { ["d", "s"].forEach(p => { $(p + "Mic").classList.toggle("live", live && dictTarget === p); $(p + "MicLbl").textContent = dictTarget === p ? label : "กดพูด"; }); }
+function micUI(live, label) { ["d", "s", "e"].forEach(p => { $(p + "Mic").classList.toggle("live", live && dictTarget === p); $(p + "MicLbl").textContent = dictTarget === p ? label : "กดพูด"; }); }
 function wireDictation(d) {
   dict = d; if (!d) return;
-  $("sMic").hidden = false; setDrillPhase();
+  $("sMic").hidden = false; $("eMic").hidden = false; setDrillPhase();
   $("dHint").textContent = "กดไมค์หนึ่งครั้งแล้วพูด พูดจบกดอีกครั้ง ระบบจะส่งให้เอง";
   d.onPartial(({ text }) => { if (dictTarget) $(dictTarget + "Partial").textContent = text; });
   d.onFinal(({ text }) => { if (!dictTarget) return; const tx = $(dictTarget + "Tx"); tx.value = tx.value ? tx.value + text : text.trimStart(); $(dictTarget + "Partial").textContent = ""; });
   d.onState(({ state, reason }) => {
+    if (dictTarget === "e") engTiming(state);
     micUI(state !== "idle", state === "starting" ? "กำลังเปิดไมค์" : state === "listening" ? "พูดจบกดอีกครั้ง" : state === "finishing" ? "กำลังแปลง" : "กดพูด");
     if (state === "idle") {
-      if (reason === "not_granted" || reason === "unavailable") { dict = null; $("dMic").hidden = true; $("sMic").hidden = true; $("dHint").textContent = "ใช้ไมค์ไม่ได้ในเครื่องนี้ พิมพ์แทนได้"; }
+      if (reason === "not_granted" || reason === "unavailable") { dict = null; $("dMic").hidden = true; $("sMic").hidden = true; $("eMic").hidden = true; $("dHint").textContent = "ใช้ไมค์ไม่ได้ในเครื่องนี้ พิมพ์แทนได้"; }
       const tgt = dictTarget;
-      if (autoSend && tgt && $(tgt + "Tx").value.trim()) { autoSend = false; tgt === "d" ? drillSend() : scenSend(); }
+      if (autoSend && tgt && $(tgt + "Tx").value.trim()) { autoSend = false; tgt === "d" ? drillSend() : tgt === "e" ? engSend() : scenSend(); }
       autoSend = false;
     }
   });
@@ -1036,12 +1333,12 @@ function micClick(p) {
   if ("speechSynthesis" in window) speechSynthesis.cancel();
   dict.start(useEn ? { language: "en" } : undefined).catch(e => {
     if (e && e.code === "unavailable" && useEn) { useEn = false; $("dHint").textContent = "โหมดภาษาอังกฤษใช้ไม่ได้ กดไมค์อีกครั้งเพื่อใช้ภาษาเริ่มต้นของเครื่อง"; }
-    else if (e && e.code === "not_granted") { dict = null; $("dMic").hidden = true; $("sMic").hidden = true; $("dHint").textContent = "ไม่ได้อนุญาตไมค์ พิมพ์แทนได้"; }
+    else if (e && e.code === "not_granted") { dict = null; $("dMic").hidden = true; $("sMic").hidden = true; $("eMic").hidden = true; $("dHint").textContent = "ไม่ได้อนุญาตไมค์ พิมพ์แทนได้"; }
   });
 }
 
 /* ---------- routing ---------- */
-const VIEWS = { home: "v-home", drill: "v-drill", scenario: "v-scen", numbers: "v-num" };
+const VIEWS = { home: "v-home", drill: "v-drill", scenario: "v-scen", english: "v-eng", numbers: "v-num" };
 function route() {
   const h = (location.hash || "#home").slice(1), v = VIEWS[h] ? h : "home";
   Object.entries(VIEWS).forEach(([k, id]) => { $(id).hidden = k !== v; });
@@ -1061,12 +1358,15 @@ $("dTx").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey
 $("dMic").onclick = () => micClick("d"); $("sMic").onclick = () => micClick("s");
 $("sNext").onclick = nextScenario; $("sNext2").onclick = nextScenario; $("sPlay").onclick = scenPlay; $("sSend").onclick = scenSend;
 $("sTx").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); scenSend(); } });
+$("eNext").onclick = nextEng; $("eNext2").onclick = nextEng; $("ePlay").onclick = engPlay; $("eSend").onclick = engSend; $("eMic").onclick = () => micClick("e");
+$("eRolePilot").onclick = () => setEngRole("pilot"); $("eRoleAtc").onclick = () => setEngRole("atc");
+$("eTx").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); engSend(); } });
 $("nNext").onclick = nextNum; $("nNext2").onclick = nextNum; $("nSay").onclick = () => speak(N.q.say, chooseVoice());
 $("rate").oninput = e => { $("rateV").textContent = e.target.value; };
 if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = loadVoices;
 window.addEventListener("hashchange", route);
 
-loadVoices(); renderTip(); renderPron(); $("sMic").hidden = true; nextDrill(); nextScenario(); nextNum(); route();
+loadVoices(); renderTip(); renderPron(); $("sMic").hidden = true; $("eMic").hidden = true; renderCrit(); nextEng(); nextDrill(); nextScenario(); nextNum(); route();
 
 /* browser speech recognition, used when the page runs as a normal website (Chrome, Edge, Safari) */
 function webSpeechDict() {
