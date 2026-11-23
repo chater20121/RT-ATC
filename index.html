@@ -494,6 +494,19 @@ details{border:2px solid var(--line)}
 .bigplay:active{transform:translateY(7px);box-shadow:none}
 .bigplay.on{animation:pulse .9s ease-in-out infinite}
 .pfb .pill{margin-top:4px}
+.sspeak{margin:10px 0}
+#v-scen.know #sSpeak,#v-scen.know #sPlay,#v-scen.know #sMic,#v-scen.know #sLog{display:none}
+.sspeak summary{cursor:pointer;font-family:var(--display);font-size:14.5px;color:var(--muted);padding:8px 2px}
+#sOpts .opt{font-family:var(--body)}
+.qzcats{margin-top:-2px}
+.qzbar{display:flex;justify-content:space-between;font-family:var(--display);font-size:14.5px;color:var(--muted);margin:4px 2px 6px}
+.qztrack{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin-bottom:12px}
+.qztrack i{display:block;height:100%;background:var(--mint);border-radius:999px;transition:width .3s}
+.qzin{width:100%;font:inherit;font-size:17px;padding:12px 14px;border:2px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);margin-bottom:10px}
+.qzin:focus{outline:none;border-color:var(--mint)}
+.qzsum{text-align:center}
+.qzsum ul{text-align:left}
+.qzbig{font-family:var(--display);font-size:40px;margin:6px 0 0}
 .pq{font-size:17px;font-weight:600;margin:12px 0 10px;text-wrap:balance}
 .opt.sel{border-color:var(--pri,#5b5bd6);box-shadow:inset 0 0 0 2px var(--pri,#5b5bd6)}
 .opt.plain{opacity:.75}
@@ -608,14 +621,19 @@ details{border:2px solid var(--line)}
     <button class="ctl main" id="sMic" aria-label="กดพูด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><small id="sMicLbl">กดพูด</small></button>
     <button class="ctl" id="sNext2" aria-label="สุ่มโจทย์ใหม่"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11l-3-3M20 17H9l3 3"/><path d="M16 7l4 0M4 17h4"/></svg><small>สุ่มใหม่</small></button>
   </div>
-  <div class="log">
-    <textarea id="sTx" rows="2" placeholder="ตอบนักบินตรงนี้" aria-label="ข้อความตอบนักบิน"></textarea>
-    <div class="partial" id="sPartial"></div>
-    <button class="pill" id="sSend">ส่ง</button>
-  </div>
+  <p class="pq" id="sQ">เลือกข้อความที่ควรพูด</p>
+  <div class="opts" id="sOpts"></div>
+  <details class="sspeak" id="sSpeak">
+    <summary>ตอบเองด้วยเสียงหรือพิมพ์ (ไม่บังคับ)</summary>
+    <div class="log">
+      <textarea id="sTx" rows="2" placeholder="ตอบนักบินตรงนี้" aria-label="ข้อความตอบนักบิน"></textarea>
+      <div class="partial" id="sPartial"></div>
+      <button class="pill" id="sSend">ส่ง</button>
+    </div>
+  </details>
   <div class="log" id="sLog" aria-live="polite"></div>
   <section class="result" id="sResult" hidden></section>
-  <p class="hint">โจทย์สุ่มตอนนี้มีเฉพาะสถานการณ์ที่มีแหล่งอ้างอิงตรวจได้: MAYDAY, PAN PAN, สงสัยวิทยุขัดข้อง, emergency descent, ขอ code ฉุกเฉิน, สั่งเงียบความถี่, จบ distress</p>
+  <p class="hint">โจทย์สุ่มมี 2 แบบ: สถานการณ์ฉุกเฉิน 7 แบบ (MAYDAY, PAN PAN, วิทยุขัดข้อง ฯลฯ) และความรู้เชิงลึก 122 ข้อ จาก ICAO Doc 4444 บท 4-6 (speed control, altimeter, separation, wake turbulence, SID/STAR, visual approach) และ Doc 9432 บท 2-11 เขียนเป็นภาษาไทยของเราเอง ทุกข้อมีเลขข้ออ้างอิง</p>
 </section>
 
 <!-- ENGLISH (ICAO plain language) -->
@@ -1336,6 +1354,8 @@ function toggleStar() {
 /* ---------- SCENARIO ---------- */
 const SC = { s: null, voice: null, done: false };
 function nextScenario() {
+  if (Math.random() < 0.75) { scenKnow(); return; }
+  $("v-scen").classList.remove("know"); $("sQ").textContent = "เลือกข้อความที่ควรพูด";
   const ad = pick(AERODROMES); let s; do { s = pick(SCENARIOS)(ad); } while (SC.s && s.kind === SC.s.kind && Math.random() < 0.7);
   SC.s = s; SC.ad = ad; SC.voice = chooseVoice(); SC.done = false;
   $("sKind").textContent = s.kind; $("sTitle").textContent = s.title; $("sMeta").textContent = s.meta; $("sAsk").textContent = s.ask;
@@ -1343,6 +1363,50 @@ function nextScenario() {
   if (s.pilot) logTo($("sLog"), "PILOT", s.pilot, "pilot");
   else logTo($("sLog"), "SYS", `เรียก ${csText(s.cs)} ไปแล้ว 2 ครั้ง ไม่มีเสียงตอบ`, "sys");
   $("sTx").placeholder = s.noCs ? "เช่น Attention all aircraft ... / All stations ..." : `เช่น ${csText(s.cs)}, ...`;
+  scenOpts(s, ad);
+}
+/* deep-knowledge situation from Doc 4444 / Doc 9432 (KNOW bank) */
+function scenKnow() {
+  const q = knowQ(); SC.s = { kind: q.kind, know: true, model: q.right, cs: newCs(), noCs: true }; SC.done = false;
+  $("v-scen").classList.add("know"); $("sQ").textContent = "เลือกคำตอบที่ถูก";
+  $("sKind").textContent = "ความรู้เชิงลึก · " + q.kind; $("sTitle").textContent = q.q.includes(q.cs) ? q.cs : "สถานการณ์";
+  $("sMeta").textContent = q.src[0].replace(/ ข้อ .*/, ""); $("sAsk").textContent = q.q;
+  $("sLog").innerHTML = ""; $("sResult").hidden = true; $("sTx").value = ""; $("sPartial").textContent = "";
+  const box = $("sOpts"); box.innerHTML = "";
+  shuffle([q.right, ...q.wrongs]).forEach(t => {
+    const b = el("button", "opt", t);
+    b.onclick = () => {
+      if (SC.done) return; SC.done = true;
+      [...box.children].forEach(c => { c.disabled = true; if (c.textContent === q.right) c.classList.add("right"); else if (c === b) c.classList.add("wrong"); });
+      const ok = t === q.right;
+      renderResult($("sResult"), { pct: ok ? 100 : 0, model: q.right, text: ok ? "ถูกต้องตามเอกสาร" : "ยังไม่ถูก",
+        items: [{ st: ok ? "ok" : "bad", label: "เลือกคำตอบตามเอกสาร", note: ok ? "" : "ดูคำตอบที่ถูกและข้ออ้างอิงด้านล่าง" }] }, q.src);
+    };
+    box.append(b);
+  });
+}
+/* multiple choice: the right call plus calls from other emergency situations, retargeted to this callsign */
+function scenOpts(s, ad) {
+  const box = $("sOpts"); box.innerHTML = "";
+  const from = {};
+  shuffle(SCENARIOS).forEach(fn => { const o = fn(ad); if (o.kind === s.kind) return;
+    const txt = o.noCs ? o.model : o.model.split(csText(o.cs)).join(csText(s.cs));
+    if (txt !== s.model && !(txt in from)) from[txt] = o.kind; });
+  const wrongs = Object.keys(from).slice(0, 3);
+  shuffle([s.model, ...wrongs]).forEach(t => {
+    const b = el("button", "opt", t);
+    b.onclick = () => {
+      if (SC.done) return; SC.done = true;
+      [...box.children].forEach(c => { c.disabled = true; if (c.textContent === s.model) c.classList.add("right"); else if (c === b) c.classList.add("wrong"); });
+      const ok = t === s.model;
+      logTo($("sLog"), "ATC", t, "atc");
+      renderResult($("sResult"), { pct: ok ? 100 : 0, model: s.model, text: ok ? "เลือกถูก ตรงกับสถานการณ์" : "ยังไม่ถูก",
+        items: [{ st: ok ? "ok" : "bad", label: "เลือกข้อความที่ตรงกับโจทย์", note: ok ? "" : `ข้อที่เลือกใช้กับสถานการณ์: ${from[t]}` }] }, s.src);
+      if (ok && s.reply) logTo($("sLog"), "PILOT", s.reply, "pilot");
+      if (ok && s.sysAfter) logTo($("sLog"), "SYS", s.sysAfter, "sys");
+    };
+    box.append(b);
+  });
 }
 function scenPlay() { const s = SC.s; if (s.pilotSay) return speak(s.pilotSay, SC.voice); logTo($("sLog"), "SYS", "โจทย์นี้นักบินไม่ตอบ ลองส่งคำสั่งให้ถูกแบบ", "sys"); }
 async function scenSend() {
@@ -1689,14 +1753,15 @@ function deck() {
   ];
 }
 const PMODES = [
+  { k: "quiz", t: "ข้อสอบปรนัย" }, { k: "type", t: "พิมพ์ตอบ" },
   { k: "cards", t: "แฟลชการ์ด" }, { k: "order", t: "เรียงคำ" }, { k: "match", t: "จับคู่" },
   { k: "spot", t: "หาจุดผิด" }, { k: "listen", t: "ฟังแล้วพิมพ์" },
   { k: "ad", t: "ข้อมูลสนามสุ่ม" }, { k: "case", t: "วิเคราะห์สถานการณ์" }, { k: "cs", t: "Callsign" }
 ];
-const P = { mode: "cards", last: null, t: null };
+const P = { mode: "quiz", last: null, t: null };
 const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 function pTask() { const save = SEL, m = D.mode; SEL = TOPICS.filter(t => t.k !== "fav").map(t => t.k); D.mode = "hear"; const t = buildTask(null); SEL = save; D.mode = m; return t; }
-function setPMode(k) { P.mode = k; renderPModes(); nextPrac(); }
+function setPMode(k) { if (P.mode !== k) qzReset(); P.mode = k; renderPModes(); nextPrac(); }
 function renderPModes() {
   const box = $("pModes"); box.innerHTML = "";
   PMODES.forEach(m => { const b = el("button", "pmode", m.t); b.setAttribute("aria-pressed", m.k === P.mode); b.onclick = () => setPMode(m.k); box.append(b); });
@@ -1704,9 +1769,10 @@ function renderPModes() {
 }
 function nextPrac() {
   $("pFb").hidden = true; $("pFb").innerHTML = ""; $("pSrc").textContent = "";
-  ({ cards: pCards, order: pOrder, match: pMatch, spot: pSpot, listen: pListen, ad: pAd, case: pCase, cs: pCs })[P.mode]();
+  ({ quiz: pQuiz, type: pType, cards: pCards, order: pOrder, match: pMatch, spot: pSpot, listen: pListen, ad: pAd, case: pCase, cs: pCs })[P.mode]();
 }
 function pDone(pct, title, rows, src) {
+  if (QZ_MODES.includes(P.mode) && QZ.open) { QZ.open = false; QZ.n++; QZ.sum += pct; if (pct >= 100) QZ.ok++; else if (QZ.cur) QZ.miss.push(QZ.cur); }
   const box = $("pFb"); box.hidden = false; box.innerHTML = "";
   const g = pct >= 100 ? "good" : pct >= 70 ? "mid" : "bad";
   box.className = "pfb result " + g;
@@ -1726,6 +1792,7 @@ function pDone(pct, title, rows, src) {
 const rwysOf = ad => [...new Set(ad.apch.map(a => a[1]))].sort().join("/");
 const apLabel = a => `${a[0]} RWY ${a[1]}`;
 function pMcq(kind, q, right, wrongs, why, src, extra) {
+  if (QZ.cap) { QZ.cap.push({ kind, q, right, wrongs, why, src }); return; }
   const box = $("pBody"); box.innerHTML = "";
   box.append(el("div", "eyebrow", kind));
   if (extra) box.append(extra);
@@ -1941,9 +2008,300 @@ function pListen() {
   };
 }
 
+/* ---------- deep-knowledge situations (multiple choice) ----------
+   Our own Thai wording of rules in ICAO Doc 4444 (16th ed., Amdt 1-7A) chapters 4-6 and ICAO Doc 9432 (4th ed.) chapters 2-11.
+   Every number below was checked against the paragraph in r. o[0] is the right answer. {cs} becomes a random callsign. */
+const KNOW = [
+  /* --- Doc 4444 4.6 speed control --- */
+  { d: "A", k: "Speed control", q: "{cs} กำลังเข้า holding pattern คุณอยากลดความเร็วลำนี้เพื่อจัดลำดับ ทำได้หรือไม่", o: ["ไม่ได้ ห้ามใช้ speed control กับเครื่องที่กำลังเข้าหรืออยู่ใน holding", "ได้ ลดได้ทีละ 10 kt", "ได้ ถ้านักบินยินยอม"], r: "4.6.1.3" },
+  { d: "A", k: "Speed control", q: "{cs} บินอยู่ที่ FL280 ต้องการปรับความเร็ว ควรสั่งเป็นหน่วยใด", o: ["Mach ทีละ 0.01", "IAS ทีละ 10 kt", "Ground speed ทีละ 20 kt"], r: "4.6.1.6 (ตั้งแต่ FL250 ขึ้นไปใช้ Mach)" },
+  { d: "A", k: "Speed control", q: "{cs} บินอยู่ที่ FL180 ต้องการปรับความเร็ว ควรสั่งอย่างไร", o: ["IAS ทีละ 10 kt (20 km/h)", "Mach ทีละ 0.01", "TAS ทีละ 5 kt"], r: "4.6.1.6 (ต่ำกว่า FL250 ใช้ IAS)" },
+  { d: "A", k: "Speed control", q: "ต้องการเพิ่มระยะห่างระหว่างเครื่องหลายลำที่บินตามกัน ควรเริ่มอย่างไร", o: ["ลดความเร็วลำสุดท้าย หรือเพิ่มความเร็วลำแรก ก่อน แล้วค่อยปรับลำอื่นตามลำดับ", "ลดความเร็วลำแรกสุดก่อน", "สั่งทุกลำให้ใช้ความเร็วเดียวกันพร้อมกัน"], r: "4.6.2.1" },
+  { d: "A", k: "Speed control", q: "{cs} (turbojet) เพิ่งเริ่ม descent จาก cruising level คุณต้องการให้ลดความเร็วต่ำกว่า 250 kt IAS", o: ["ทำได้เมื่อนักบินยินยอมเท่านั้น", "ทำได้ทันทีไม่ต้องถาม", "ห้ามทำเด็ดขาด"], r: "4.6.3.3" },
+  { d: "A", k: "Speed control", q: "จะสั่ง {cs} ให้ลดระดับด้วยอัตราสูง พร้อมกับลดความเร็วมากๆ ในคราวเดียว เหมาะสมหรือไม่", o: ["ควรเลี่ยง เพราะสองอย่างนี้ปกติทำพร้อมกันไม่ได้ เครื่องอาจต้องบินระดับเพื่อลดความเร็วก่อน", "เหมาะสม เป็นวิธีที่แนะนำ", "ทำได้เสมอถ้าต่ำกว่า FL150"], r: "4.6.3.4" },
+  { d: "A", k: "Speed control", q: "ต่ำกว่า FL150 จะลดความเร็ว turbojet ขาเข้าได้ต่ำสุดไม่น้อยกว่าเท่าไร", o: ["220 kt IAS", "250 kt IAS", "180 kt IAS", "160 kt IAS"], r: "4.6.3.5" },
+  { d: "A", k: "Speed control", q: "{cs} อยู่บน intermediate / final approach ควรปรับความเร็วได้มากแค่ไหน", o: ["ปรับเล็กน้อย ไม่เกิน ±20 kt IAS", "ไม่เกิน ±40 kt IAS", "ไม่เกิน ±50 kt IAS"], r: "4.6.3.6" },
+  { d: "A", k: "Speed control", q: "{cs} บิน final ผ่านจุด 4 NM จาก threshold แล้ว ยังควรสั่งปรับความเร็วหรือไม่", o: ["ไม่ควร ไม่ใช้ speed control หลังผ่าน 4 NM จาก threshold", "ได้ ไม่เกิน 20 kt", "ได้ ถ้าต้องการเว้นระยะกับลำหน้า"], r: "4.6.3.7" },
+  { d: "A", k: "Speed control", q: "ไม่จำเป็นต้องจำกัดความเร็ว {cs} แล้ว ต้องทำอย่างไร", o: ["แจ้งนักบินว่าไม่มีข้อจำกัดความเร็วแล้ว", "ไม่ต้องแจ้ง นักบินจะเลิกเอง", "รอให้นักบินถามก่อน"], r: "4.6.1.7" },
+  { d: "A", k: "Speed control", q: "{cs} แจ้งว่าทำตามความเร็วที่สั่งไม่ได้ คุณควรทำอย่างไร", o: ["ใช้วิธีอื่นเพื่อให้ได้ระยะห่างที่ต้องการ", "สั่งความเร็วเดิมซ้ำ", "สั่งเข้า holding ทันทีทุกกรณี"], r: "4.6.1.5" },
+  { d: "A", k: "Speed control", q: "คำสั่งความเร็วที่ให้ {cs} ไปแล้ว มีผลถึงเมื่อไร", o: ["จนกว่าผู้ควบคุมจะยกเลิกหรือแก้ไขอย่างชัดเจน", "จนกว่าจะเปลี่ยนความถี่", "5 นาทีหลังได้รับคำสั่ง"], r: "4.6.1.2" },
+  { d: "A", k: "SID / STAR", q: "speed restriction ที่ประกาศไว้ใน SID หรือ STAR นักบินต้องทำตามถึงเมื่อไร", o: ["ทำตามจนกว่าผู้ควบคุมจะยกเลิกหรือแก้ไขอย่างชัดเจน", "นักบินเลือกได้เอง", "ใช้เฉพาะเวลากลางคืน"], r: "4.6.4" },
+  { d: "A", k: "Vertical speed", q: "{cs} แจ้งว่ารักษา rate of descent ที่สั่งไม่ได้ คุณควรทำอย่างไร", o: ["ใช้วิธีอื่นเพื่อรักษา separation โดยไม่ชักช้า", "ไม่ต้องทำอะไร", "สั่ง expedite descent ซ้ำ"], r: "4.7.1.3" },
+  /* --- 4.8 IFR to VFR --- */
+  { d: "A", k: "IFR → VFR", q: "อากาศดีมาก คุณอยากชวน {cs} ให้ยกเลิก IFR เพื่อลดงาน ทำได้หรือไม่", o: ["ไม่ได้ ห้ามชวนให้เปลี่ยนจาก IFR เป็น VFR ทั้งทางตรงและทางอ้อม", "ได้ ถ้าอากาศเป็น VMC", "ได้ ถ้าอยู่ใน class D"], r: "4.8.1" },
+  { d: "A", k: "IFR → VFR", q: "นักบินต้องพูดข้อความใด จึงถือว่าขอเปลี่ยนจาก IFR เป็น VFR", o: ["CANCELLING MY IFR FLIGHT", "REQUEST VFR", "VISUAL, PROCEEDING VFR"], r: "4.8.1" },
+  { d: "A", k: "IFR → VFR", q: "{cs} แจ้ง CANCELLING MY IFR FLIGHT ปกติผู้ควบคุมตอบว่าอะไร", o: ["IFR FLIGHT CANCELLED AT (เวลา)", "ROGER, VFR APPROVED", "CLEARED VFR"], r: "4.8.2" },
+  { d: "A", k: "IFR → VFR", q: "{cs} ขอยกเลิก IFR แต่คุณมีข้อมูลว่าเส้นทางข้างหน้าน่าจะเจอ IMC", o: ["แจ้งข้อมูลนั้นให้นักบินทราบ ถ้าทำได้", "ปฏิเสธการยกเลิก IFR", "ไม่ต้องแจ้ง เป็นเรื่องของนักบิน"], r: "4.8.3" },
+  /* --- 4.9 wake turbulence --- */
+  { d: "A", k: "Wake turbulence", q: "เครื่องที่มี MTOW 150,000 kg (ไม่อยู่ในรายชื่อ SUPER) อยู่ wake turbulence category ใด", o: ["HEAVY", "MEDIUM", "SUPER"], r: "4.9.1.1 (HEAVY คือ 136,000 kg ขึ้นไป)" },
+  { d: "A", k: "Wake turbulence", q: "เครื่องที่มี MTOW 5,700 kg อยู่ wake turbulence category ใด", o: ["LIGHT", "MEDIUM", "HEAVY"], r: "4.9.1.1 (LIGHT คือ 7,000 kg หรือน้อยกว่า)" },
+  { d: "A", k: "Wake turbulence", q: "เครื่องที่มี MTOW 70,000 kg อยู่ wake turbulence category ใด", o: ["MEDIUM", "LIGHT", "HEAVY"], r: "4.9.1.1 (MEDIUM คือน้อยกว่า 136,000 kg แต่มากกว่า 7,000 kg)" },
+  { d: "A", k: "Wake turbulence", q: "เครื่อง HEAVY ต้องพูดคำว่า HEAVY เมื่อไร", o: ["ต่อท้าย callsign ในการติดต่อครั้งแรกกับหน่วย ATS", "ทุกครั้งที่พูด", "ไม่ต้องพูด ATC ดูจากแผนการบิน"], r: "4.9.2" },
+  { d: "A", k: "Wake turbulence", q: "เฮลิคอปเตอร์กำลัง hover ใกล้เครื่องบินเบา ควรทำอย่างไร", o: ["ให้เฮลิคอปเตอร์อยู่ห่างจากเครื่องบินเบาพอสมควร", "ไม่ต้องห่วง เฮลิคอปเตอร์ไม่สร้าง wake", "ให้เครื่องบินเบาบินผ่านใต้เฮลิคอปเตอร์ได้"], r: "4.9.1.3" },
+  /* --- 4.10 altimeter --- */
+  { d: "A", k: "Altimeter setting", q: "{cs} กำลังไต่ผ่าน transition layer ต้องบอกตำแหน่งแนวดิ่งเป็นแบบใด", o: ["flight level", "altitude", "height"], r: "4.10.1.1" },
+  { d: "A", k: "Altimeter setting", q: "{cs} กำลังลดระดับผ่าน transition layer ต้องบอกตำแหน่งแนวดิ่งเป็นแบบใด", o: ["altitude", "flight level", "height above threshold"], r: "4.10.1.1" },
+  { d: "A", k: "Altimeter setting", q: "ต้องใส่ QNH ใน descent clearance เมื่อไร", o: ["ครั้งแรกที่อนุญาตให้ลดไป altitude ต่ำกว่า transition level (เว้นแต่รู้ว่านักบินได้แล้ว)", "ทุกครั้งที่เปลี่ยนระดับ", "เฉพาะเมื่อนักบินขอ"], r: "4.10.4.5" },
+  { d: "A", k: "Altimeter setting", q: "ค่าความกดอากาศวัดได้ 1012.8 hPa ต้องแจ้ง QNH ให้นักบินว่าเท่าไร", o: ["1012", "1013", "1012.8"], r: "4.10.4.7 (ปัดลงเป็นจำนวนเต็ม)" },
+  { d: "A", k: "Altimeter setting", q: "ต้องแจ้ง transition level ให้นักบินเมื่อไร", o: ["ก่อนถึง TL ระหว่าง descent ล่วงหน้าพอสมควร ทางวิทยุ ATIS หรือ data link", "หลังผ่าน TL แล้ว", "ไม่ต้องแจ้ง นักบินรู้เอง"], r: "4.10.4.3" },
+  { d: "A", k: "Altimeter setting", q: "transition level คืออะไร", o: ["flight level ต่ำสุดที่ใช้ได้ ซึ่งอยู่เหนือ transition altitude", "altitude สูงสุดที่อยู่ใต้ FL ต่ำสุด", "flight level ที่อยู่ต่ำกว่า transition altitude"], r: "4.10.2.2" },
+  { d: "A", k: "Altimeter setting", q: "จะให้ cruising level ที่ต่ำกว่า minimum flight altitude ที่รัฐกำหนดได้หรือไม่", o: ["ไม่ได้ เว้นแต่ได้รับอนุญาตเฉพาะจากหน่วยงานที่รับผิดชอบ", "ได้ ถ้านักบินขอ", "ได้ ถ้าเป็นเวลากลางวัน"], r: "4.10.3.1" },
+  /* --- 4.11 position reports --- */
+  { d: "A", k: "Position report", q: "{cs} เปลี่ยนความถี่มาหาคุณ การเรียกครั้งแรกต้องมีข้อมูลใดเสมอ", o: ["ระดับ (flight level หรือ altitude)", "ETA ปลายทาง", "ปริมาณน้ำมัน"], r: "4.11.2.1.1" },
+  { d: "A", k: "Position report", q: "{cs} ได้รับคำสั่งให้รักษาความเร็ว 250 kt แล้วเปลี่ยนความถี่ การเรียกครั้งแรกต้องบอกอะไรเพิ่ม", o: ["ความเร็วที่ได้รับคำสั่ง", "ความเร็วลม", "ไม่ต้องบอกเพิ่ม"], r: "4.11.2.2" },
+  { d: "A", k: "Position report", q: "{cs} ไม่ส่ง position report ตามเวลาที่ควร คุณควรทำอย่างไร", o: ["อย่าถือว่าเวลาประมาณการถูกต้อง และรีบติดตามให้ได้รายงานถ้ามีผลต่อการควบคุมลำอื่น", "ใช้เวลาประมาณการเดิมต่อไป", "ประกาศ distress ทันที"], r: "4.11.1.5" },
+  /* --- 4.12 air-reports --- */
+  { d: "A", k: "Special air-report", q: "นักบินเจอสภาพใด ที่ต้องทำ special air-report", o: ["turbulence ระดับ moderate หรือ severe", "turbulence ระดับ light", "ลมปะทะหน้าแรงขึ้น 10 kt"], r: "4.12.3.1" },
+  { d: "A", k: "Special air-report", q: "ข้อใดเป็นเหตุให้ต้องทำ special air-report", o: ["เมฆเถ้าภูเขาไฟ (volcanic ash cloud)", "เมฆชั้นบางๆ ใต้ระดับบิน", "ฝนตกเล็กน้อยใกล้สนาม"], r: "4.12.3.1 g)" },
+  { d: "A", k: "Special air-report", q: "{cs} รายงานว่า braking action แย่กว่าที่แจ้งไว้ ต้องส่งต่อข้อมูลให้ใคร", o: ["ผู้ดำเนินการสนามบิน (aerodrome operator) โดยไม่ชักช้า", "ไม่ต้องส่งต่อ", "ส่งให้ ACC เท่านั้น"], r: "4.12.7" },
+  /* --- 5.2-5.3 separation --- */
+  { d: "A", k: "Vertical separation", q: "นอกพื้นที่ RVSM ที่ระดับต่ำกว่า FL290 vertical separation minimum คือเท่าไร", o: ["1,000 ft", "500 ft", "2,000 ft"], r: "5.3.2 a)" },
+  { d: "A", k: "Vertical separation", q: "นอกพื้นที่ RVSM ที่ระดับตั้งแต่ FL290 ขึ้นไป vertical separation minimum คือเท่าไร", o: ["2,000 ft", "1,000 ft", "3,000 ft"], r: "5.3.2 a)" },
+  { d: "A", k: "Vertical separation", q: "ลำหนึ่งรายงานออกจากระดับแล้ว คุณจะให้ {cs} เข้าระดับนั้นได้ทันที ยกเว้นกรณีใด", o: ["มี severe turbulence ในบริเวณนั้น", "เป็นเวลากลางคืน", "ลำที่ออกเป็นเครื่อง MEDIUM"], r: "5.3.4.1 a)" },
+  { d: "A", k: "Vertical separation", q: "สองลำลดระดับใน holding pattern เดียวกัน แต่ลดด้วยอัตราต่างกันมาก ควรทำอย่างไร", o: ["อาจกำหนด rate สูงสุดให้ลำบน และ rate ต่ำสุดให้ลำล่าง เพื่อรักษา separation", "ไม่ต้องทำอะไร", "ให้ทั้งสองลำออกจาก holding"], r: "5.3.4.1.1" },
+  { d: "A", k: "Cruising level", q: "{cs} อยู่ที่ cruising level หนึ่งอยู่แล้ว มีอีกลำขอระดับเดียวกัน ใครได้สิทธิ์ก่อนตามปกติ", o: ["ลำที่อยู่ที่ระดับนั้นแล้ว", "ลำที่ขอทีหลัง", "ลำที่ใหญ่กว่า"], r: "5.3.3.7" },
+  { d: "A", k: "Cruising level", q: "หลายลำบินไปสนามบินปลายทางเดียวกัน ควรให้ cruising level อย่างไร", o: ["ให้ระดับที่เหมาะกับลำดับการ approach ที่ปลายทาง", "ให้ระดับเดียวกันทุกลำ", "ให้ระดับตามที่นักบินขอเท่านั้น"], r: "5.3.3.6" },
+  { d: "A", k: "Separation", q: "{cs} ถูกจี้เครื่อง (unlawful interference) ควรใช้ separation กับลำอื่นอย่างไร", o: ["ใช้มากกว่าค่าต่ำสุดตามความเหมาะสม", "ใช้ค่าต่ำสุดตามปกติ", "ไม่ต้องให้ separation"], r: "5.2.1.3" },
+  { d: "A", k: "Separation", q: "รู้ว่า separation แบบที่ใช้อยู่กำลังจะรักษาไว้ไม่ได้ ต้องทำอย่างไร", o: ["จัด separation แบบอื่นไว้ก่อนที่ค่าเดิมจะถูกละเมิด", "รอให้ละเมิดก่อนแล้วค่อยแก้", "แจ้งนักบินให้ระวังเอง"], r: "5.2.1.4" },
+  { d: "A", k: "Separation", q: "{cs} แจ้งว่าระบบนำร่องเสื่อม ทำให้ separation ที่ใช้อยู่ไม่พอ คุณต้องทำอย่างไร", o: ["จัด separation หรือค่าต่ำสุดแบบอื่นที่เหมาะสม", "ใช้ค่าเดิมต่อ", "ปฏิเสธให้บริการ"], r: "5.2.2" },
+  { d: "A", k: "Holding", q: "{cs} holding อยู่ มีเครื่อง en route จะผ่านภายใน 5 นาทีบินจาก holding area และไม่มี lateral separation ต้องใช้ separation แบบใด", o: ["vertical separation", "ไม่ต้องใช้", "wake turbulence separation"], r: "5.5.2" },
+  { d: "A", k: "Holding", q: "เครื่องใน holding pattern ที่อยู่ติดกัน (adjacent) ต้องแยกกันอย่างไร ถ้าไม่มี lateral separation ระหว่าง holding area", o: ["ใช้ vertical separation minimum", "แยกด้วยเวลา 2 นาที", "ไม่ต้องแยก"], r: "5.5.1" },
+  /* --- 5.6-5.7 departures --- */
+  { d: "A", k: "Departure separation", q: "สองลำวิ่งขึ้นต่อกันแล้วแยก track ทันทีอย่างน้อย 45° ต้องเว้นระยะเวลาเท่าไร", o: ["1 นาที", "2 นาที", "5 นาที"], r: "5.6.1" },
+  { d: "A", k: "Departure separation", q: "ลำแรกเร็วกว่าลำหลัง 40 kt ขึ้นไป และทั้งสองบิน track เดียวกัน ต้องเว้นระหว่างการวิ่งขึ้นกี่นาที", o: ["2 นาที", "1 นาที", "3 นาที"], r: "5.6.2" },
+  { d: "A", k: "Departure separation", q: "ลำหลังจะไต่ผ่านระดับของลำที่ขึ้นก่อน บน track เดียวกัน ขณะไม่มี vertical separation ต้องเว้นเท่าไร", o: ["5 นาที", "2 นาที", "3 นาที"], r: "5.6.3" },
+  { d: "A", k: "Departure vs arrival", q: "มีเครื่องขาเข้า straight-in approach เครื่องขาออกวิ่งขึ้นได้ทุกทิศทางจนถึงเมื่อไร", o: ["5 นาทีก่อนเครื่องขาเข้าจะถึง instrument runway", "3 นาทีก่อนเครื่องขาเข้าจะถึง", "จนเครื่องขาเข้าแตะพื้น"], r: "5.7.1.2 a)" },
+  { d: "A", k: "Departure vs arrival", q: "เครื่องขาเข้าเริ่ม procedure turn แล้ว เครื่องขาออกจะวิ่งขึ้นได้ในเงื่อนไขใด", o: ["ทิศต่างจากทิศกลับของ approach อย่างน้อย 45° และขึ้นก่อนเครื่องขาเข้าถึงต้น instrument runway อย่างน้อย 3 นาที", "ทิศใดก็ได้", "ห้ามวิ่งขึ้นจนกว่าเครื่องขาเข้าจะลงจอด"], r: "5.7.1.1 b)" },
+  /* --- 5.8 wake turbulence time minima --- */
+  { d: "A", k: "Wake separation", q: "เครื่อง MEDIUM ลงจอดตามหลังเครื่อง HEAVY ต้องเว้นเท่าไร", o: ["2 นาที", "3 นาที", "1 นาที"], r: "5.8.2.1 c)" },
+  { d: "A", k: "Wake separation", q: "เครื่อง LIGHT ลงจอดตามหลังเครื่อง HEAVY ต้องเว้นเท่าไร", o: ["3 นาที", "2 นาที", "4 นาที"], r: "5.8.2.1 e)" },
+  { d: "A", k: "Wake separation", q: "เครื่อง LIGHT ลงจอดตามหลังเครื่อง MEDIUM ต้องเว้นเท่าไร", o: ["3 นาที", "2 นาที", "ไม่ต้องเว้น"], r: "5.8.2.1 e)" },
+  { d: "A", k: "Wake separation", q: "เครื่อง LIGHT ลงจอดตามหลังเครื่อง SUPER ต้องเว้นเท่าไร", o: ["4 นาที", "3 นาที", "2 นาที"], r: "5.8.2.1 d)" },
+  { d: "A", k: "Wake separation", q: "เครื่อง MEDIUM วิ่งขึ้นตามหลังเครื่อง HEAVY บน runway เดียวกัน (เต็มความยาว) ต้องเว้นเท่าไร", o: ["2 นาที", "3 นาที", "1 นาที"], r: "5.8.3.1 3)" },
+  { d: "A", k: "Wake separation", q: "เครื่อง LIGHT วิ่งขึ้นตามหลังเครื่อง MEDIUM บน runway เดียวกัน ต้องเว้นเท่าไร", o: ["2 นาที", "3 นาที", "ไม่ต้องเว้น"], r: "5.8.3.1 4)" },
+  { d: "A", k: "Wake separation", q: "เครื่อง MEDIUM วิ่งขึ้นจากกลาง runway (intermediate part) ตามหลังเครื่อง HEAVY ต้องเว้นเท่าไร", o: ["3 นาที", "2 นาที", "4 นาที"], r: "5.8.3.3 c)" },
+  { d: "A", k: "Wake separation", q: "เครื่อง HEAVY ทำ missed approach และเครื่อง LIGHT จะวิ่งขึ้นจาก runway ทิศตรงข้าม ต้องเว้นเท่าไร", o: ["3 นาที", "2 นาที", "1 นาที"], r: "5.8.5.1 3)" },
+  { d: "A", k: "Wake separation", q: "{cs} (IFR) ทำ visual approach รายงานเห็นลำหน้าที่หนักกว่า และได้รับคำสั่งให้ follow และรักษาระยะเอง ATC ต้องทำอะไร", o: ["ไม่ต้องให้ wake separation แต่ต้องเตือน caution wake turbulence", "ต้องให้ wake separation ตามเวลาปกติ", "ไม่ต้องทำอะไรเลย"], r: "5.8.1.1 b), 5.8.1.2" },
+  /* --- 5.9-5.10 --- */
+  { d: "A", k: "Own separation in VMC", q: "จะให้ {cs} ไต่หรือลดระดับโดยรักษา separation เองใน VMC ได้ในเงื่อนไขใด", o: ["class D/E กลางวัน ช่วงไต่หรือลด ที่หรือต่ำกว่า 10,000 ft และนักบินอีกลำยินยอม", "ทุก class ทุกเวลา", "เฉพาะกลางคืน ที่สูงกว่า FL100"], r: "5.9" },
+  { d: "A", k: "Essential traffic", q: "เมื่อแจ้ง essential traffic information จะบอก wake turbulence category ของอีกลำเมื่อไร", o: ["เมื่อลำนั้นมี category หนักกว่าลำที่รับข้อมูล", "ทุกครั้ง", "ไม่ต้องบอกเลย"], r: "5.10.2 Note 2" },
+  { d: "A", k: "Essential traffic", q: "VFR สองลำบินใกล้กัน ถือเป็น essential traffic ของกันและกันหรือไม่", o: ["ไม่ใช่ ยกเว้นใน class B", "ใช่ ทุก class", "ใช่ เฉพาะ class D"], r: "5.10.1.1 Note" },
+  { d: "A", k: "Essential traffic", q: "ข้อใดเป็นข้อมูลที่ต้องมีใน essential traffic information", o: ["ทิศทางบิน แบบเครื่อง ระดับ และตำแหน่งหรือเวลาที่จะผ่านกัน", "ชื่อสายการบินและจำนวนผู้โดยสาร", "สนามบินต้นทางและปลายทาง"], r: "5.10.2" },
+  /* --- Chapter 6 --- */
+  { d: "A", k: "Near aerodrome", q: "ลำหลังรายงานว่าเห็นลำหน้าและรักษาระยะเองได้ ใกล้สนามบิน ผู้ควบคุมทำอะไรได้", o: ["ลด separation minima ได้", "ต้องเพิ่ม separation", "ต้องสั่ง go around"], r: "6.1 c)" },
+  { d: "A", k: "Essential local traffic", q: "ข้อใดเป็น essential local traffic", o: ["อากาศยาน ยานพาหนะ หรือคน บนหรือใกล้ runway ที่จะใช้ ซึ่งอาจเป็นอันตราย", "เครื่องที่บินผ่านที่ FL300", "เครื่องที่จอดอยู่ที่หลุมจอดไกลจาก runway"], r: "6.2.1 Note 1" },
+  { d: "A", k: "SID", q: "ให้ clearance บอกชื่อ SID แต่ไม่บอก cleared level นักบินไต่ตาม vertical profile ของ SID ได้หรือไม่", o: ["ไม่ได้ ชื่อ SID อย่างเดียวไม่ได้อนุญาตให้ไต่", "ได้ ไต่ถึงระดับสุดท้ายของ SID", "ได้ ถึง FL100"], r: "6.3.2.3 Note 2" },
+  { d: "A", k: "SID", q: "{cs} ได้รับอนุญาตให้บินตรงไป waypoint หนึ่งบน SID ข้อจำกัดของ waypoint ที่ถูกข้ามไปเป็นอย่างไร", o: ["ถูกยกเลิก ส่วนข้อจำกัดที่เหลือยังใช้", "ยังต้องทำตามทุกข้อ", "ยกเลิกข้อจำกัดทั้ง SID"], r: "6.3.2.4.4" },
+  { d: "A", k: "SID", q: "vector {cs} ออกนอก SID ไปจุดที่ไม่อยู่บน SID ผู้ควบคุมต้องทำอะไร", o: ["ย้ำ cleared level ให้ข้อจำกัดเท่าที่จำเป็น และบอกถ้าจะให้กลับเข้า SID", "ไม่ต้องทำอะไร ข้อจำกัด SID ยังมีผล", "ยกเลิกแผนการบิน"], r: "6.3.2.4.5" },
+  { d: "A", k: "SID", q: "CLIMB VIA SID TO (level) หมายความว่าอย่างไร", o: ["ไต่ถึงระดับที่อนุญาต ทำตาม level และ speed restriction ที่ประกาศ และบินตามเส้นทาง SID", "ไต่ได้ทันทีโดยไม่ต้องสนใจข้อจำกัด", "บินตรงไปจุดสุดท้ายของ SID"], r: "6.3.2.4.1 a)" },
+  { d: "A", k: "SID", q: "CLIMB UNRESTRICTED TO (level) หมายความว่าอย่างไร", o: ["ยกเลิกทั้ง level และ speed restriction แต่ยังบินตามเส้นทาง SID", "ยกเลิกเส้นทาง SID ด้วย", "ยกเลิกเฉพาะ speed restriction"], r: "6.3.2.4.1 f)" },
+  { d: "A", k: "STAR", q: "DESCEND VIA STAR TO (level), CANCEL LEVEL RESTRICTIONS หมายความว่าอย่างไร", o: ["ลดถึงระดับที่อนุญาต ยกเลิก level restriction แต่ยังทำตามเส้นทางและ speed restriction", "ยกเลิกทุกข้อจำกัดรวมถึงเส้นทาง", "ยกเลิกเฉพาะ speed restriction"], r: "6.5.2.4.1 b)" },
+  { d: "A", k: "STAR", q: "ข้อใดต้องมีใน standard arrival clearance", o: ["callsign, ชื่อ STAR, runway-in-use, cleared level", "callsign, ปลายทางสำรอง, ปริมาณน้ำมัน", "callsign, ความเร็วลม, อุณหภูมิ"], r: "6.5.2.3" },
+  { d: "A", k: "Departure", q: "แนะนำให้ {cs} วิ่งขึ้นทิศที่ไม่ใช่ทิศทวนลม เพื่อเร่งการขึ้น ใครตัดสินใจ", o: ["นักบินผู้บังคับบัญชา (PIC)", "ผู้ควบคุมหอบังคับการบิน", "ผู้ดำเนินการสนามบิน"], r: "6.3.3.1" },
+  { d: "A", k: "Departure", q: "คาดว่า departure delay จะเกินกี่นาที จึงควรแจ้งผู้ดำเนินการเดินอากาศ", o: ["30 นาที", "15 นาที", "60 นาที"], r: "6.3.3.3" },
+  { d: "A", k: "Arrival", q: "จะอนุญาตให้ IFR ลดต่ำกว่า minimum altitude สำหรับ initial approach ได้เมื่อใด", o: ["นักบินรายงานว่าเห็นสนามบินและรักษาการมองเห็นได้", "นักบินขอ", "เป็นเวลากลางวัน"], r: "6.5.1.3 b)" },
+  { d: "A", k: "Visual approach", q: "ผู้ควบคุมต้องการเสนอ visual approach ให้ {cs} ต้องมีเงื่อนไขใด", o: ["นักบินต้องยินยอม", "สั่งได้เลย นักบินต้องทำตาม", "ต้องเป็นเครื่อง LIGHT"], r: "6.5.3.1" },
+  { d: "A", k: "Visual approach", q: "อนุญาต visual approach ได้เมื่อ ceiling ที่รายงานเป็นอย่างไร (นักบินเห็นพื้นดิน)", o: ["อยู่ที่หรือสูงกว่าระดับจุดเริ่ม initial approach segment", "สูงกว่า 1,000 ft", "สูงกว่า transition level"], r: "6.5.3.3 a)" },
+  { d: "A", k: "Visual approach", q: "{cs} ได้รับ visual approach แล้ว ยังต้องให้ separation กับเครื่องอื่นหรือไม่", o: ["ต้อง กับเครื่องขาเข้าและขาออกอื่น", "ไม่ต้อง นักบินดูแลเอง", "ต้องเฉพาะกับ HEAVY"], r: "6.5.3.4" },
+  { d: "A", k: "Arrival", q: "ACC จะให้ approach clearance กับเครื่องขาเข้าลำแรกแทนการส่งไป holding fix ได้เมื่อใด", o: ["หลังประสานกับหน่วย approach control แล้ว", "ทุกครั้งที่ต้องการ", "ไม่ได้เลย"], r: "6.5.1.5" },
+  { d: "A", k: "Departure info", q: "{cs} ติดต่อ approach หลังวิ่งขึ้น แล้วมี wind shear เกิดใน climb-out area", o: ["แจ้งนักบินโดยไม่ชักช้า เว้นแต่รู้ว่าได้รับข้อมูลแล้ว", "ไม่ต้องแจ้ง เพราะขึ้นไปแล้ว", "แจ้งหลังเครื่องถึง cruising level"], r: "6.4.1" },
+  /* --- Doc 9432 --- */
+  { d: "B", k: "Readback", q: "{cs} readback ผิด ผู้ควบคุมควรพูดอย่างไร", o: ["NEGATIVE I SAY AGAIN แล้วตามด้วยข้อความที่ถูก", "CORRECTION แล้วตามด้วยข้อความที่ถูก", "SAY AGAIN"], r: "2.8.3.9" },
+  { d: "B", k: "Readback", q: "ข้อใดต้อง readback เสมอ", o: ["clearance ให้เข้า ข้าม หรือ hold short ของ runway", "ข้อมูลลมผิวพื้น", "traffic information"], r: "2.8.3.5 b)" },
+  { d: "B", k: "Readback", q: "นักบินควรจบ readback ด้วยอะไร", o: ["callsign ของตัวเอง", "คำว่า ROGER", "ชื่อหน่วย ATC"], r: "2.8.3.7" },
+  { d: "B", k: "Clearance", q: "สงสัยว่า {cs} จะทำตาม clearance ได้หรือไม่ ผู้ควบคุมทำอะไรได้", o: ["ต่อท้ายด้วย IF UNABLE แล้วให้ทางเลือก", "รอให้นักบินบอกเอง", "ไม่ให้ clearance นั้น"], r: "2.8.3.10" },
+  { d: "B", k: "Clearance", q: "ช่วงใดที่ห้ามส่ง route clearance ให้นักบินเด็ดขาด", o: ["ขณะ line up หรือวิ่งขึ้น", "ก่อน start up", "ขณะจอดที่หลุมจอด"], r: "2.8.3.2" },
+  { d: "B", k: "Clearance", q: "คำว่า TAKE OFF ใช้เมื่อไร", o: ["เฉพาะตอนอนุญาตให้วิ่งขึ้น หรือยกเลิก take-off clearance", "ทุกครั้งที่พูดถึงการขาออก", "ใน route clearance"], r: "2.8.3.3" },
+  { d: "B", k: "Level", q: "จะเปลี่ยนส่วนใดส่วนหนึ่งของ level clearance ที่ให้ {cs} ไปแล้ว ต้องทำอย่างไร", o: ["พูด level clearance ใหม่ทั้งหมด", "พูดเฉพาะส่วนที่เปลี่ยน", "ใช้คำว่า CORRECTION อย่างเดียว"], r: "3.3.3" },
+  { d: "B", k: "Phraseology", q: "คำว่า IMMEDIATELY ควรใช้เมื่อไร", o: ["เมื่อต้องทำทันทีด้วยเหตุผลด้านความปลอดภัย", "ทุกครั้งที่อยากให้เร็ว", "เมื่อการจราจรหนาแน่น"], r: "3.1.5" },
+  { d: "B", k: "Phraseology", q: "ส่งข้อความผิด ต้องแก้อย่างไร", o: ["พูด CORRECTION ทวนกลุ่มคำสุดท้ายที่ถูก แล้วพูดข้อความที่ถูก", "พูด DISREGARD แล้วเงียบ", "พูด NEGATIVE"], r: "2.8.1.6" },
+  { d: "B", k: "Tower", q: "ช่วงใดที่ผู้ควบคุมไม่ควรพูดกับนักบิน เว้นแต่จำเป็นด้านความปลอดภัย", o: ["ขณะวิ่งขึ้น ไต่ช่วงแรก ช่วงท้ายของ final และขณะวิ่งบนทางวิ่งหลังลงจอด", "ขณะ taxi", "ขณะบิน cruise"], r: "4.1.2" },
+  { d: "B", k: "Taxi", q: "taxi clearance ที่ clearance limit อยู่เลย runway ไป ต้องมีอะไร", o: ["อนุญาตข้าม runway อย่างชัดเจน หรือสั่ง hold short", "ไม่ต้องมีอะไรเพิ่ม", "บอกแค่ชื่อ taxiway"], r: "4.4.2" },
+  { d: "B", k: "Conditional clearance", q: "จะใช้ conditional clearance ที่เกี่ยวกับ active runway ได้เมื่อไร", o: ["เมื่อผู้ควบคุมและนักบินเห็นเครื่องหรือยานพาหนะที่เกี่ยวข้องทั้งคู่", "ทุกครั้งที่จราจรหนาแน่น", "เฉพาะกลางคืน"], r: "4.5.7" },
+  { d: "B", k: "Conditional clearance", q: "ลำดับที่ถูกของ conditional clearance คือข้อใด", o: ["callsign, เงื่อนไข, clearance, ทวนเงื่อนไขสั้นๆ", "clearance, callsign, เงื่อนไข", "เงื่อนไข, clearance, callsign"], r: "4.5.7" },
+  { d: "B", k: "Take-off", q: "{cs} เริ่มวิ่งขึ้นแล้ว แต่ต้องยกเลิกเพื่อเลี่ยงอันตราย ควรสั่งอย่างไร", o: ["สั่งหยุดทันที และพูดคำสั่งพร้อม callsign ซ้ำ", "ปล่อยให้วิ่งขึ้นไปก่อน", "สั่ง go around"], r: "4.5.11" },
+  { d: "B", k: "Circuit", q: "นักบินรายงาน FINAL เมื่อเลี้ยวเข้า final ห่างจาก touchdown ไม่เกินเท่าไร", o: ["4 NM (7 km)", "8 NM", "10 NM"], r: "4.7.1" },
+  { d: "B", k: "Circuit", q: "บิน straight-in approach นักบินรายงาน LONG FINAL ที่ระยะประมาณเท่าไร", o: ["8 NM (15 km) จาก touchdown", "4 NM", "15 NM"], r: "4.7.1" },
+  { d: "B", k: "Go around", q: "สั่ง {cs} ที่กำลังทำ instrument approach ให้ go around โดยไม่ได้ให้คำสั่งอื่น นักบินจะทำอะไร", o: ["ทำ missed approach procedure", "เข้า traffic circuit", "บินตรงไปสนามสำรอง"], r: "4.8.2" },
+  { d: "B", k: "Go around", q: "นักบินเป็นฝ่ายเริ่ม go around เอง ต้องพูดว่าอะไร", o: ["GOING AROUND", "MISSED APPROACH", "ABORTING"], r: "4.8.3" },
+  { d: "B", k: "Surveillance", q: "vector {cs} เสร็จแล้ว ต้องทำอย่างไร", o: ["สั่งให้ resume own navigation พร้อมแจ้งตำแหน่งและคำสั่งที่จำเป็น", "ไม่ต้องบอก นักบินบินต่อเอง", "สั่งให้ squawk ident"], r: "6.3.3" },
+  { d: "B", k: "Surveillance", q: "vector {cs} เพื่อแยกเครื่อง ต้องบอกเหตุผลหรือไม่", o: ["ควรบอก เว้นแต่เหตุผลชัดเจนอยู่แล้ว", "ไม่ต้องบอกเลย", "บอกเฉพาะถ้านักบินถาม"], r: "6.3.1" },
+  { d: "B", k: "Traffic information", q: "traffic information บอกตำแหน่งเครื่องอีกลำด้วยวิธีใด", o: ["ตำแหน่งแบบนาฬิกา 12 ชั่วโมง ระยะทาง และทิศทางบิน", "พิกัด latitude/longitude", "ชื่อ waypoint เท่านั้น"], r: "6.4.1" },
+  { d: "B", k: "Surveillance", q: "ใช้ avoiding action เมื่อไร", o: ["เมื่อเห็นว่าจะมีความเสี่ยงชนกันในทันทีถ้าไม่ทำอะไร", "ทุกครั้งที่มีเครื่องอยู่ในรัศมี 10 NM", "เมื่อนักบินขอ"], r: "6.7.2" },
+  { d: "B", k: "Approach", q: "{cs} (IFR) ขอ visual approach หมายความว่าอย่างไร", o: ["นักบินมองเห็นพื้นดินตามเงื่อนไข แต่เที่ยวบินยังเป็น IFR", "เปลี่ยนเป็น VFR แล้ว", "บินใน VMC เสมอ"], r: "7.3.2" },
+  { d: "B", k: "Distress", q: "ข้อความประเภทใดมี priority สูงสุด", o: ["distress (MAYDAY) แล้วตามด้วย urgency (PAN PAN)", "urgency แล้วตามด้วย distress", "ข้อความจาก ATC เสมอ"], r: "9.1.4" },
+  { d: "B", k: "Distress", q: "ความถี่ฉุกเฉินสากลของการบินคือเท่าไร", o: ["121.5 MHz", "123.45 MHz", "118.1 MHz"], r: "9.1.8" },
+  { d: "B", k: "Distress", q: "ปกตินักบินควรส่ง distress หรือ urgency call บนความถี่ใด", o: ["ความถี่ที่ใช้อยู่ขณะนั้น", "121.5 MHz เสมอ", "ความถี่ของ ACC เสมอ"], r: "9.1.8" },
+  { d: "B", k: "Distress", q: "สถานีอื่นได้ยิน distress traffic บนความถี่ ควรทำอย่างไร", o: ["งดใช้ความถี่นั้น เว้นแต่ช่วยเหลือโดยตรง จนกว่า distress traffic จะจบ", "ใช้ความถี่ต่อได้ตามปกติ", "เรียกถามสถานการณ์"], r: "9.1.11" },
+  { d: "B", k: "Distress", q: "ลำดับที่แนะนำของ distress message คือข้อใด", o: ["สถานีที่เรียก, callsign, ลักษณะเหตุ, ความตั้งใจ, ตำแหน่ง/ระดับ/heading", "callsign, ตำแหน่ง, สถานีที่เรียก, เหตุ", "เหตุ, ความตั้งใจ, callsign"], r: "9.2.1.1" },
+  { d: "B", k: "Distress", q: "สถานีที่ถูกเรียกไม่ตอบ distress call ของ {cs} ใครควรตอบ", o: ["สถานีภาคพื้นอื่นหรืออากาศยานอื่น ให้ตอบและช่วยเท่าที่ทำได้", "ไม่มีใครตอบได้นอกจากสถานีที่ถูกเรียก", "รอให้นักบินเรียกซ้ำ"], r: "9.1.9" },
+  { d: "B", k: "Radio failure", q: "นักบินพยายามติดต่อทุกทางแล้วไม่สำเร็จ ต้องส่งข้อความอย่างไร", o: ["ส่งสองครั้งบนความถี่ที่กำหนด ขึ้นต้นด้วย TRANSMITTING BLIND", "ส่งครั้งเดียวบน 121.5", "เงียบไว้จนลงจอด"], r: "9.5.2" },
+  { d: "B", k: "Radio failure", q: "เครื่องรับวิทยุ (receiver) ของนักบินเสีย นักบินต้องขึ้นต้นข้อความว่าอะไร", o: ["TRANSMITTING BLIND DUE TO RECEIVER FAILURE", "RADIO FAILURE", "MAYDAY"], r: "9.5.3" },
+  { d: "B", k: "Radio failure", q: "ติดต่อ {cs} ไม่ได้ บนความถี่ที่คิดว่านักบินฟังอยู่ ขั้นแรกควรทำอะไร", o: ["ขอให้สถานีอื่นหรือเครื่องในเส้นทางช่วยเรียกและ relay", "ประกาศ distress ทันที", "หยุดเรียกแล้วรอ"], r: "9.5.6" },
+  { d: "B", k: "Radio failure", q: "ส่ง ATC clearance แบบ blind transmission ได้หรือไม่", o: ["ไม่ได้ เว้นแต่ผู้ออก clearance ขอเป็นการเฉพาะ", "ได้ ทุกครั้ง", "ได้ ถ้าส่งสองครั้ง"], r: "9.5.8" },
+  { d: "B", k: "Aerodrome info", q: "มีค่า RVR หลายจุด ต้องแจ้งเรียงอย่างไร", o: ["touchdown zone, mid-point, stop end", "stop end, mid-point, touchdown", "ค่าต่ำสุดก่อน"], r: "10.2.2" },
+  { d: "B", k: "Aerodrome info", q: "คำใดใช้บอกสภาพน้ำบน runway", o: ["DAMP, WET, WATER PATCHES, FLOODED", "DRY, MOIST, SOAKED", "LIGHT, MODERATE, HEAVY"], r: "10.3.3" },
+  { d: "B", k: "ACAS RA", q: "{cs} รายงานว่ากำลังทำตาม ACAS RA ผู้ควบคุมควรทำอย่างไร", o: ["ไม่สั่งเปลี่ยนเส้นทางบินจนกว่านักบินรายงานกลับมาตาม clearance แต่ให้ traffic information ได้", "สั่งให้กลับระดับเดิมทันที", "สั่งเลี้ยวหลบทันที"], r: "11.6.1" },
+  { d: "B", k: "ACAS RA", q: "หลังเครื่องออกจาก clearance เพราะ RA ผู้ควบคุมกลับมารับผิดชอบ separation เมื่อไร", o: ["เมื่อรับทราบรายงานว่ากลับมาตาม clearance แล้ว (หรือกำลังกลับและให้ clearance ใหม่ที่นักบินรับทราบ)", "ทันทีที่ RA จบ", "เมื่อเครื่องลงจอด"], r: "11.6.2" },
+  { d: "B", k: "Callsign", q: "{cs} มี callsign คล้ายกับอีกลำบนความถี่เดียวกัน ทำอะไรได้", o: ["สั่งให้เปลี่ยนชนิด callsign ชั่วคราว", "ปล่อยไว้ ห้ามเปลี่ยน callsign ระหว่างบิน", "ให้ลำหนึ่งออกจากความถี่"], r: "2.7.2.3" },
+  { d: "B", k: "Radio check", q: "ระดับความชัด readability 3 หมายถึงอะไร", o: ["อ่านได้แต่ยาก (readable but with difficulty)", "อ่านได้ชัดเจน", "อ่านไม่ได้"], r: "2.8.4.3" },
+  { d: "B", k: "Emergency descent", q: "{cs} ประกาศ emergency descent ผู้ควบคุมต้องทำอะไรก่อน", o: ["ทำทุกอย่างเพื่อปกป้องเครื่องอื่น เช่น ประกาศเตือนแล้วตามด้วยคำสั่งเฉพาะ", "สั่งให้หยุดลดระดับ", "รอจนลดระดับเสร็จ"], r: "9.4.1, 9.4.2" }
+];
+const KNOW_SRC = { A: D4444, B: D9432 };
+function knowQ() {
+  const x = pick(KNOW), cs = csText(newCs());
+  return { kind: x.k, q: x.q.split("{cs}").join(cs), right: x.o[0], wrongs: x.o.slice(1), src: [`${KNOW_SRC[x.d]} ข้อ ${x.r}`], cs };
+}
+
+/* ---------- silent quiz: multiple choice and typed answers, no mic needed ----------
+   Every question is built from data already in this app, with the same source it cites elsewhere
+   (WORDS, NQ, TEMPLATES, AERODROMES, OPS, EMG, DECKS). No new aviation facts are added here. */
+const QZ = { n: 0, ok: 0, sum: 0, len: 10, cap: null, open: false, cat: "all", miss: [] };
+const QZ_MODES = ["quiz", "type"];
+const HAS_DECKS = typeof DECKS !== "undefined";
+const QZ_CATS = [
+  { k: "all", t: "ทุกหมวด" }, { k: "word", t: "คำมาตรฐาน" }, { k: "num", t: "ตัวเลข" },
+  { k: "phr", t: "คำสั่ง / readback" }, { k: "ad", t: "สนาม / callsign" }, { k: "emg", t: "ฉุกเฉิน" }, { k: "sit", t: "สถานการณ์เชิงลึก" },
+  ...(HAS_DECKS ? [{ k: "doc", t: "เอกสารภายใน" }] : [])
+];
+const uniq = a => a.filter((v, i, s) => s.indexOf(v) === i);
+function qzCapture(fn) { QZ.cap = []; try { fn(); } finally { var c = QZ.cap; QZ.cap = null; } return c[0] || null; }
+function qzWrongs(right, make, n) { const out = []; for (let g = 0; g < 30 && out.length < n; g++) { const w = make(); if (w && w !== right && !out.includes(w)) out.push(w); } return out; }
+
+/* multiple choice generators: each returns { cat, kind, q, right, wrongs, why, src, log? } */
+const MCQ_GEN = [
+  { cat: "word", f: () => { const [w, , sh] = pick(WORDS); return { kind: "คำมาตรฐาน → ความหมาย", q: `${w} แปลว่าอะไร`, right: sh, wrongs: shuffle(uniq(WORDS.filter(x => x[0] !== w).map(x => x[2]))).filter(x => x !== sh).slice(0, 3), src: [WSRC] }; } },
+  { cat: "word", f: () => { const [w, lg] = pick(WORDS); return { kind: "ความหมาย → คำมาตรฐาน", q: `"${lg}" ใช้คำว่าอะไร`, right: w, wrongs: shuffle(WORDS.filter(x => x[0] !== w).map(x => x[0])).slice(0, 3), src: [WSRC] }; } },
+  { cat: "word", f: () => { const [d, s] = pick(PRON); return { kind: "ออกเสียงตัวเลข", q: `"${d}" ออกเสียงแบบ ICAO ว่าอย่างไร`, right: s, wrongs: shuffle(PRON.filter(x => x[0] !== d).map(x => x[1])).slice(0, 3), src: [PSRC] }; } },
+  { cat: "num", f: () => { let q; do { q = pick(NQ)(); } while (new Set([q.right, ...q.wrong]).size < 3); return { kind: "อ่านตัวเลข · " + q.kind, q: `${q.val} อ่านแบบ ICAO ว่าอย่างไร`, right: q.right, wrongs: q.wrong, why: q.why, src: [q.src] }; } },
+  { cat: "phr", f: () => { const t = pTask(); if (!t.mutate) return null; const right = t.atc(t.vals);
+      const wr = qzWrongs(right, () => t.atc(t.mutate(t.vals)), 2), late = right.slice(csText(t.cs).length).replace(/^,\s*/, "") + ", " + csText(t.cs);
+      if (wr.length < 2) wr.push(late);
+      return { kind: "เลือกคำสั่งที่ถูก", q: `ต้องการสั่ง ${csText(t.cs)} ให้${t.thai.replace(/^ให้/, "")} ข้อใดถูก`, right, wrongs: wr,
+        why: wr.includes(late) ? "คำสั่ง ATC ขึ้นต้นด้วย callsign ก่อนเสมอ และค่าต้องตรงกับที่ต้องการสั่ง" : null, src: t.src }; } },
+  { cat: "phr", f: () => { const t = pTask(); if (!t.mutate) return null; const right = `${t.rbText(t.vals)}, ${csText(t.cs)}`;
+      return { kind: "เลือก readback ที่ถูก", log: t.atc(t.vals), q: "นักบินควร readback ว่าอย่างไร", right,
+        wrongs: [...qzWrongs(right, () => `${t.rbText(t.mutate(t.vals))}, ${csText(t.cs)}`, 2), `roger, ${csText(t.cs)}`],
+        why: "ต้องทวนค่าที่ได้รับให้ครบและตรง คำว่า ROGER อย่างเดียวใช้ตอบสิ่งที่ต้อง read back ไม่ได้", src: [RB_SRC, WSRC] }; } },
+  { cat: "ad", f: () => qzCapture(pAd) },
+  { cat: "ad", f: () => qzCapture(pCs) },
+  { cat: "emg", f: () => qzCapture(pCaseEmg) },
+  { cat: "emg", f: () => qzCapture(pCaseCode) },
+  { cat: "sit", w: 3, f: knowQ },
+  ...(HAS_DECKS ? [{ cat: "doc", w: 3, f: () => { const k = pick(DECK_ORDER), d = DECKS[k], x = pick(d.q);
+      return { kind: `${d.t} · ${x.k}`, q: x.q, right: x.o[0], wrongs: x.o.slice(1), src: [`${d.ref} ${x.r}`] }; } }] : [])
+];
+
+/* typed generators: each returns { cat, kind, q, ph, answer, check(text) -> pct, rows?, why, src, log? } */
+const lc = s => String(s).toLowerCase().replace(/[^a-z0-9. ]/g, " ").replace(/\s+/g, " ").trim();
+const digitsOf = s => String(s).replace(/[^0-9.]/g, "");
+const TYPE_GEN = [
+  { cat: "word", f: () => { const [w, lg] = pick(WORDS); return { kind: "พิมพ์คำมาตรฐาน", q: `"${lg}" ใช้คำว่าอะไร`, ph: "พิมพ์เป็นภาษาอังกฤษ", answer: w,
+      check: s => { const a = lc(s), b = lc(w); return a === b || (b.length >= 6 && lev(a, b) <= 1) ? 100 : 0; }, src: [WSRC] }; } },
+  { cat: "num", f: () => { const q = pick(NQ)(); return { kind: "ฟังคำอ่าน → พิมพ์ตัวเลข · " + q.kind, q: `"${q.say.toUpperCase()}" คือค่าเท่าไร`, ph: "พิมพ์เป็นตัวเลข", answer: q.val,
+      check: s => digitsOf(s) !== "" && +digitsOf(s) === +digitsOf(q.val) ? 100 : 0, why: q.why, src: [q.src] }; } },
+  { cat: "phr", w: 2, f: () => { const t = pTask(); const checks = t.checks(t.vals);
+      return { kind: "พิมพ์คำสั่ง ATC", q: `${t.ad.app} · ${csText(t.cs)} · สั่ง: ${t.thai}`, ph: "พิมพ์คำสั่งเต็ม เริ่มด้วย callsign", answer: t.atc(t.vals), area: true,
+        check: s => { const g = grade(t, checks, s); return { pct: g.pct, rows: g.items.filter(i => i.st !== "ok").map(i => ["ยังขาด/ผิด", i.label + (i.note ? ` (${i.note})` : "")]) }; }, src: t.src }; } },
+  { cat: "phr", f: () => { const t = pTask(); const checks = t.checks(t.vals), task = { ...t, noCs: true };
+      return { kind: "พิมพ์ readback", log: t.atc(t.vals), q: "ถ้าคุณเป็นนักบิน ต้อง readback ว่าอย่างไร (ไม่ต้องพิมพ์ callsign)", ph: "พิมพ์ readback", answer: `${t.rbText(t.vals)}, ${csText(t.cs)}`, area: true,
+        check: s => { const g = grade(task, checks, s); return { pct: g.pct, rows: g.items.filter(i => i.st !== "ok").map(i => ["ยังขาด/ผิด", i.label + (i.note ? ` (${i.note})` : "")]) }; }, src: [RB_SRC, ...t.src] }; } },
+  { cat: "ad", f: () => { const ad = pick(AERODROMES), f = pick(["app", "twr"]), v = f === "app" ? ad.appFreq : ad.twrFreq;
+      return { kind: "พิมพ์ความถี่", q: `ความถี่ ${f === "app" ? ad.app : ad.twr} (${ad.icao}) คือเท่าไร`, ph: "เช่น 118.1", answer: v, check: s => digitsOf(s) === v ? 100 : 0, src: [`${AIP} ${ad.p218} AD 2.18`] }; } },
+  { cat: "ad", f: () => { const ad = pick(AERODROMES);
+      return { kind: "พิมพ์ ICAO location indicator", q: `สนามบิน ${ad.city} (${ad.ident}) ใช้รหัส ICAO อะไร`, ph: "4 ตัวอักษร", answer: ad.icao, check: s => s.trim().toUpperCase() === ad.icao ? 100 : 0, src: [`${AIP} ${ad.p218} AD 2.18`] }; } },
+  { cat: "ad", f: () => { const o = pick(OPS), n = rand(101, 989);
+      return { kind: "พิมพ์ callsign", q: `flight plan ${o.d}${n} ต้องเรียกทางวิทยุว่าอะไร`, ph: "พิมพ์ callsign", answer: `${o.tel} ${n}`,
+        check: s => callsignState(norm(s), { tel: o.tel, num: n }) === "start" && !norm(s).toks.includes(o.d.toLowerCase()) ? 100 : 0, why: "ใช้ telephony designator ตามด้วยเลขเที่ยวบิน", src: [OPS_SRC] }; } },
+  { cat: "emg", f: () => { const [sit, ans] = pick(EMG);
+      return { kind: "พิมพ์ MAYDAY หรือ PAN PAN", q: `สถานการณ์: ${sit} ควรขึ้นต้นข้อความด้วยคำใด`, ph: "MAYDAY หรือ PAN PAN", answer: ans,
+        check: s => lc(s).replace(/\s/g, "") === lc(ans).replace(/\s/g, "") ? 100 : 0, src: [`${A10} 5.3.1.1 นิยาม distress และ urgency`] }; } }
+];
+
+function qzPick(gens) {
+  const pool = gens.filter(g => QZ.cat === "all" ? true : g.cat === QZ.cat);
+  const list = pool.length ? pool : gens, w = list.map(g => g.w || 1);
+  for (let tries = 0; tries < 20; tries++) {
+    let r = Math.random() * w.reduce((a, b) => a + b, 0), g = list[0];
+    for (let i = 0; i < list.length; i++) { r -= w[i]; if (r <= 0) { g = list[i]; break; } }
+    const q = g.f(); if (q && (q.check || (q.wrongs && q.wrongs.length >= 2))) return q;
+  }
+  return null;
+}
+function qzHead(box) {
+  const cats = el("div", "pmodes qzcats"); cats.setAttribute("aria-label", "หมวดคำถาม");
+  QZ_CATS.forEach(c => { const b = el("button", "pmode", c.t); b.setAttribute("aria-pressed", c.k === QZ.cat); b.onclick = () => { QZ.cat = c.k; qzReset(); nextPrac(); }; cats.append(b); });
+  box.append(cats);
+  const bar = el("div", "qzbar");
+  bar.append(el("span", null, `ข้อ ${QZ.n + 1} / ${QZ.len}`), el("span", null, `ถูก ${QZ.ok}`));
+  const tr = el("div", "qztrack"); const fill = el("i"); fill.style.width = (QZ.n / QZ.len * 100) + "%"; tr.append(fill);
+  box.append(bar, tr);
+}
+function qzReset() { QZ.n = 0; QZ.ok = 0; QZ.sum = 0; QZ.miss = []; QZ.open = false; }
+function qzSummary() {
+  const box = $("pBody"); box.innerHTML = "";
+  const pct = Math.round(QZ.sum / QZ.len);
+  const card = el("div", "card qzsum");
+  const fb = el("div", "fb"); fb.innerHTML = MASCOT; fb.append(el("b", null, pct >= 90 ? "เยี่ยมมาก!" : pct >= 70 ? "ดีแล้ว ทวนอีกนิด" : "ลองอีกชุดนะ"));
+  card.append(fb, el("p", "qzbig", `${QZ.ok} / ${QZ.len}`), el("p", "hint", `คะแนนเฉลี่ย ${pct}%`));
+  if (QZ.miss.length) { card.append(el("div", "eyebrow", "ข้อที่ควรทวน")); const u = el("ul", "src"); QZ.miss.forEach(m => u.append(el("li", null, m))); card.append(u); }
+  const again = el("button", "pill", "เริ่มชุดใหม่"); again.onclick = () => { qzReset(); nextPrac(); }; card.append(again);
+  box.append(card);
+  qzReset();
+}
+function qzStart() { if (QZ.n >= QZ.len) { qzSummary(); return false; } QZ.open = true; return true; }
+function pQuiz() {
+  if (!qzStart()) return;
+  const box = $("pBody"); box.innerHTML = ""; qzHead(box);
+  const q = qzPick(MCQ_GEN); if (!q) { box.append(el("p", "hint", "หมวดนี้ยังไม่มีคำถาม")); return; }
+  QZ.cur = q.q;
+  box.append(el("div", "eyebrow", q.kind));
+  if (q.log) { const log = el("div", "log"); box.append(log); logTo(log, "ATC", q.log, "atc"); }
+  box.append(el("p", "pq", q.q));
+  const opts = el("div", "opts"); box.append(opts);
+  shuffle([q.right, ...q.wrongs]).forEach(t => {
+    const b = el("button", "opt", t); b.style.fontFamily = "var(--body)";
+    b.onclick = () => {
+      [...opts.children].forEach(c => { c.disabled = true; if (c.textContent === q.right) c.classList.add("right"); else if (c === b) c.classList.add("wrong"); });
+      const ok = t === q.right;
+      pDone(ok ? 100 : 0, ok ? "ถูกต้อง!" : "ยังไม่ถูก", [["คำตอบ", q.right], ...(q.why ? [["เพราะ", q.why]] : [])], q.src);
+    };
+    opts.append(b);
+  });
+}
+function pType() {
+  if (!qzStart()) return;
+  const box = $("pBody"); box.innerHTML = ""; qzHead(box);
+  const q = qzPick(TYPE_GEN); if (!q) { box.append(el("p", "hint", "หมวดนี้ยังไม่มีคำถาม")); return; }
+  QZ.cur = q.q;
+  box.append(el("div", "eyebrow", q.kind));
+  if (q.log) { const log = el("div", "log"); box.append(log); logTo(log, "ATC", q.log, "atc"); }
+  box.append(el("p", "pq", q.q));
+  const inp = q.area ? el("textarea") : el("input");
+  if (q.area) inp.rows = 2; else { inp.type = "text"; inp.className = "qzin"; }
+  inp.id = "pTx"; inp.placeholder = q.ph; inp.setAttribute("aria-label", "คำตอบ"); inp.autocomplete = "off"; inp.spellcheck = false;
+  inp.setAttribute("autocapitalize", "off");
+  box.append(inp);
+  const row = el("div", "row two");
+  const skip = el("button", "sm", "ไม่รู้ ดูเฉลย"), chk = el("button", "sm good", "ตรวจ");
+  row.append(skip, chk); box.append(row);
+  const finish = given => {
+    chk.disabled = skip.disabled = true; inp.disabled = true;
+    const r = given == null ? 0 : q.check(given), pct = typeof r === "number" ? r : r.pct, extra = typeof r === "number" ? [] : r.rows;
+    pDone(pct, pct >= 100 ? "ถูกต้อง!" : given == null ? "เฉลย" : pct >= 70 ? `เกือบแล้ว ${pct}%` : "ยังไม่ถูก",
+      [["คำตอบที่ถูก", q.answer], ...(given ? [["คุณตอบ", given]] : []), ...extra, ...(q.why ? [["เพราะ", q.why]] : [])], q.src);
+  };
+  chk.onclick = () => { if (inp.value.trim()) finish(inp.value.trim()); else inp.focus(); };
+  skip.onclick = () => finish(null);
+  inp.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); chk.click(); } });
+  setTimeout(() => inp.focus({ preventScroll: true }), 50);
+}
+
 /* ---------- game layer: learning path, XP, streak, celebrations ---------- */
 const MASCOT = `<svg class="tower" viewBox="0 0 120 140" aria-hidden="true"><path class="t-base" d="M36 128h48l-5 9H41z"/><rect class="t-shaft" x="47" y="74" width="26" height="56" rx="7"/><rect class="t-win2" x="54" y="90" width="12" height="7" rx="3"/><rect class="t-win2" x="54" y="104" width="12" height="7" rx="3"/><path class="t-roof" d="M30 30h60a5 5 0 0 1 0 10H30a5 5 0 0 1 0-10z"/><path class="t-ant" d="M60 30V14"/><circle class="t-light" cx="60" cy="12" r="4.5"/><path class="t-cab" d="M22 40h76l-9 36H31z"/><path class="t-glass" d="M30 46h60l-6 22H36z"/><g class="t-eyes"><circle cx="49" cy="57" r="6.5"/><circle cx="71" cy="57" r="6.5"/><circle class="t-shine" cx="51" cy="54.5" r="2"/><circle class="t-shine" cx="73" cy="54.5" r="2"/></g><path class="t-smile" d="M54 71q6 4.5 12 0"/><path class="t-band" d="M19 56C19 14 101 14 101 56"/><rect class="t-cup" x="11" y="48" width="13" height="20" rx="6"/><rect class="t-cup" x="96" y="48" width="13" height="20" rx="6"/><path class="t-boom" d="M102 66c0 12-8 17-19 17"/><circle class="t-micb" cx="81" cy="83" r="4"/></svg>`;
 const GI = {
+  quiz: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 9l2 2 4-4M8 16h8"/></svg>',
+  type: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>',
   cs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l7-3 4-7 2 1-2 6 5-1 2 2-6 3-2 6-2-1 1-5-6 2z"/></svg>',
   ad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 6.4L20 12l-6.4 1.6L12 20l-1.6-6.4L4 12l6.4-2.6z"/></svg>',
   case: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
@@ -1973,7 +2331,7 @@ function unitsList() {
   const u = [
     { c: "c-pri", n: 1, t: "ซ้อมสั่งการ ทีละหัวข้อ", p: "ให้คำสั่งนักบิน แล้วฟัง readback",
       nodes: TOPICS.filter(t => t.k !== "fav").map(t => ({ key: t.k, t: t.t, icon: TOPIC_ICON[t.k] || "star", go: () => goTopic(t.k) })) },
-    { c: "c-mint", n: 2, t: "ทวนความเข้าใจ", p: "แฟลชการ์ด เรียงคำ จับคู่ หาจุดผิด ฟัง ข้อมูลสนาม วิเคราะห์",
+    { c: "c-mint", n: 2, t: "ทวนความเข้าใจ", p: "ข้อสอบปรนัย พิมพ์ตอบ แฟลชการ์ด เรียงคำ จับคู่ หาจุดผิด ฟัง ข้อมูลสนาม วิเคราะห์ ไม่ต้องใช้ไมค์",
       nodes: PMODES.map(m => ({ key: "p-" + m.k, t: m.t, icon: m.k, go: () => { P.mode = m.k; renderPModes(); nextPrac(); location.hash = "#practice"; } })) },
     { c: "c-amb", n: 3, t: "อ่านตัวเลขแบบ ICAO", p: "FL, QNH, squawk, ความถี่",
       nodes: [{ key: "num", t: "เลือกคำอ่านที่ถูก", icon: "hash", go: () => { location.hash = "#numbers"; } }] },
@@ -2080,7 +2438,7 @@ $("mHear").onclick = () => { D.mode = "hear"; $("mHear").setAttribute("aria-sele
 $("dNext").onclick = nextDrill; $("dSend").onclick = drillSend; $("dPlay").onclick = drillPlay; $("dStar").onclick = toggleStar;
 $("dReveal").onclick = reveal; $("dRbOk").onclick = () => judge(true); $("dRbBad").onclick = () => judge(false);
 $("dTx").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); drillSend(); } });
-$("dMic").onclick = () => micClick("d"); $("sMic").onclick = () => micClick("s");
+$("dMic").onclick = () => micClick("d"); $("sMic").onclick = () => { $("sSpeak").open = true; micClick("s"); };
 $("sNext").onclick = nextScenario; $("sNext2").onclick = nextScenario; $("sPlay").onclick = scenPlay; $("sSend").onclick = scenSend;
 $("sTx").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); scenSend(); } });
 $("eNext").onclick = nextEng; $("eNext2").onclick = nextEng; $("ePlay").onclick = engPlay; $("eSend").onclick = engSend; $("eMic").onclick = () => micClick("e");
@@ -2124,7 +2482,7 @@ if (C && C.use) {
   C.use("tts").then(t => { claudeTts = t; if (t) loadVoices(); }).catch(() => {});
   C.use("sample").then(s => { sampleFn = s; }).catch(() => {});
 }
-window.__rt = { norm, grade, TEMPLATES, SCENARIOS, NQ, sayFL, sayQNH, saySq, sayAlt, sayFreq, AERODROMES };
+window.__rt = { norm, grade, TEMPLATES, SCENARIOS, NQ, KNOW, MCQ_GEN, TYPE_GEN, QZ, sayFL, sayQNH, saySq, sayAlt, sayFreq, AERODROMES };
 })();
 </script>
 </body>
