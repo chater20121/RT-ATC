@@ -448,6 +448,52 @@ details{border:2px solid var(--line)}
 @keyframes flyup{0%{transform:translate(-50%,20px) scale(.6);opacity:0}25%{transform:translate(-50%,0) scale(1.15);opacity:1}70%{opacity:1}100%{transform:translate(-50%,-70px) scale(1);opacity:0}}
 @keyframes fall{to{transform:translate(var(--x,0px),110vh) rotate(var(--r,540deg))}}
 .node-wrap.cur .nlabel{margin-top:10px}
+
+/* practice modes */
+.pmodes{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none}
+.pmodes::-webkit-scrollbar{display:none}
+.pmode{flex:none;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-family:var(--display);font-size:14.5px;color:var(--muted);box-shadow:0 3px 0 var(--line);margin-bottom:3px}
+.pmode[aria-pressed="true"]{background:var(--mint-soft);border-color:var(--mint);color:var(--ink);box-shadow:0 3px 0 var(--mint-sh)}
+.pbody{display:grid;gap:14px}
+.row.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sm.good{background:var(--mint);border-color:var(--mint);color:var(--on-color);box-shadow:0 4px 0 var(--mint-sh)}
+.sm.bad{background:var(--surface);border-color:var(--cor);color:var(--bad);box-shadow:0 4px 0 var(--cor-sh)}
+.sm.good:active:not(:disabled),.sm.bad:active:not(:disabled){box-shadow:none}
+.flip{position:relative;display:block;width:100%;height:250px;border:0;padding:0;background:none;perspective:1200px;cursor:pointer}
+.flip .face{position:absolute;inset:0;border-radius:24px;border:2px solid var(--line);box-shadow:0 6px 0 var(--line);display:grid;place-content:center;gap:10px;padding:22px;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .55s cubic-bezier(.3,1.35,.5,1)}
+.flip .front{background:var(--pri-soft)}
+.flip .back{background:var(--mint-soft);transform:rotateY(180deg)}
+.flip.flipped .front{transform:rotateY(-180deg)} .flip.flipped .back{transform:rotateY(0)}
+.flip small{font-family:var(--display);font-size:13px;color:var(--muted);letter-spacing:.04em}
+.flip strong{font-family:var(--display);font-weight:500;font-size:28px;line-height:1.3;color:var(--ink);text-wrap:balance}
+.flip strong.big{font-size:72px;line-height:1}
+.flip .bt{font-size:19px;line-height:1.5;color:var(--ink);font-weight:500;text-wrap:balance}
+.flip .bs{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+.tiles.answer{min-height:104px;padding:10px 0;border-bottom:2px solid var(--line);background:repeating-linear-gradient(to bottom,transparent 0 48px,var(--line) 48px 50px)}
+.tiles.bank{min-height:50px;justify-content:center}
+.tile{border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:7px 12px;font-family:var(--mono);font-size:15px;box-shadow:0 3px 0 var(--line);margin-bottom:3px;color:var(--ink)}
+.tile:active{transform:translateY(3px);box-shadow:none}
+.tile.pop{animation:pop .3s cubic-bezier(.3,1.6,.5,1)}
+.tile.ok{background:var(--mint-soft);border-color:var(--mint)} .tile.no{background:var(--cor-soft);border-color:var(--cor);animation:shake .4s}
+.mtimer{font-family:var(--display);font-size:18px;color:var(--pri);text-align:center;font-variant-numeric:tabular-nums}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mcol{display:grid;gap:10px;align-content:start}
+.mitem{border:2px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 8px;min-height:54px;font-family:var(--display);font-size:14.5px;line-height:1.3;box-shadow:0 4px 0 var(--line);color:var(--ink);transition:transform .08s,opacity .3s}
+.mitem.num{font-size:22px}
+.mitem.sel{background:var(--pri-soft);border-color:var(--pri);box-shadow:0 4px 0 var(--pri)}
+.mitem.ok{background:var(--mint-soft);border-color:var(--mint);box-shadow:none;opacity:.55;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.mitem.no{background:var(--cor-soft);border-color:var(--cor);animation:shake .4s}
+.spotwords{display:inline}
+.sw{border:0;border-bottom:3px dotted var(--pri);background:none;padding:0 1px;font:inherit;color:inherit;border-radius:4px}
+.sw:hover{background:var(--pri-soft)}
+.sw.no{background:var(--cor-soft);color:var(--bad);border-bottom-color:var(--cor);text-decoration:line-through}
+.sw.miss{background:var(--amb-soft)}
+.bigplay{justify-self:center;display:grid;place-items:center;gap:4px;width:132px;height:132px;border-radius:50%;border:0;background:var(--pri);color:var(--on-color);box-shadow:0 7px 0 var(--pri-sh);font-family:var(--display);font-size:15px;margin-bottom:7px}
+.bigplay svg{width:44px;height:44px}
+.bigplay:active{transform:translateY(7px);box-shadow:none}
+.bigplay.on{animation:pulse .9s ease-in-out infinite}
+.pfb .pill{margin-top:4px}
 </style>
 
 <svg class="curves" viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true">
@@ -609,6 +655,21 @@ details{border:2px solid var(--line)}
     <p class="hint" style="text-align:left;margin-top:8px">สรุปเป็นภาษาไทยจาก ICAO Language Proficiency Rating Scale (Doc 9835 ฉบับที่ 2) คำในเครื่องหมายคำพูดยกมาจากต้นฉบับ ระดับ 4 คือระดับต่ำสุดที่ใช้ทำงานได้</p>
   </details>
   <p class="notice">ใช้ฝึกเท่านั้น คะแนนในหน้านี้ไม่ใช่ผลสอบ การสอบจริงต้องสอบกับศูนย์ทดสอบที่ กพท. รับรอง</p>
+</section>
+
+<!-- PRACTICE (flashcards, word order, matching, spot the error, listen) -->
+<section class="screen" id="v-prac" aria-labelledby="hPrac" hidden>
+  <div class="top">
+    <a class="iconbtn" href="#home" aria-label="กลับหน้าหลัก"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <h1 id="hPrac">แบบฝึก</h1>
+    <button class="iconbtn" id="pNext" aria-label="ข้อถัดไป"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="prog" data-v="practice" role="presentation"><i></i></div>
+  <div class="pmodes" id="pModes" aria-label="รูปแบบแบบฝึก"></div>
+  <div class="pbody" id="pBody"></div>
+  <section class="pfb result" id="pFb" hidden></section>
+  <p class="hint" id="pSrc"></p>
+  <p class="notice">ความหมายคำมาตรฐานเป็นคำอธิบายภาษาไทยของเราเอง สรุปจาก ICAO Annex 10 Vol II ข้อ 5.2.1.5.8 ใช้ฝึกเท่านั้น</p>
 </section>
 
 <!-- NUMBERS -->
@@ -1555,6 +1616,203 @@ function micClick(p) {
   });
 }
 
+/* ---------- PRACTICE: flashcards, word order, matching, spot the error, listen & type ----------
+   Standard words: meanings paraphrased in Thai from Annex 10 Vol II 5.2.1.5.8 (our own wording, not the ICAO text).
+   Number pronunciation: Annex 10 Vol II 5.2.1.4.3.1. Phrases and readbacks reuse the drill TEMPLATES (Doc 4444 refs). */
+const WSRC = `${A10} 5.2.1.5.8`;
+const WORDS = [
+  ["ACKNOWLEDGE", "แจ้งกลับว่าได้รับและเข้าใจข้อความนี้แล้ว", "ขอให้แจ้งว่าได้รับ"],
+  ["AFFIRM", "ใช่", "ใช่"],
+  ["APPROVED", "อนุญาตให้ทำตามที่ขอ", "อนุญาตตามที่ขอ"],
+  ["BREAK", "คั่นระหว่างส่วนต่างๆ ของข้อความ ใช้เมื่อแยกเนื้อความกับส่วนอื่นไม่ชัด", "คั่นส่วนของข้อความ"],
+  ["BREAK BREAK", "คั่นระหว่างข้อความที่ส่งถึงอากาศยานต่างลำ ใช้ตอนความถี่หนาแน่นมาก", "คั่นข้อความถึงต่างลำ"],
+  ["CANCEL", "ยกเลิก clearance ที่ส่งไปก่อนหน้า", "ยกเลิก clearance เดิม"],
+  ["CHECK", "ตรวจสอบระบบหรือขั้นตอน ใช้ในความหมายนี้เท่านั้น และปกติไม่ต้องตอบ", "ตรวจระบบ/ขั้นตอน"],
+  ["CLEARED", "อนุญาตให้ดำเนินการภายใต้เงื่อนไขที่ระบุ", "อนุญาตตามเงื่อนไข"],
+  ["CONFIRM", "ขอให้ยืนยัน clearance คำสั่ง การกระทำ หรือข้อมูล", "ขอให้ยืนยัน"],
+  ["CONTACT", "ให้ไปติดต่อสื่อสารกับหน่วยที่ระบุ", "ไปติดต่อกับ..."],
+  ["CORRECT", "ถูกต้อง", "ถูกต้อง"],
+  ["CORRECTION", "ข้อความนี้ส่งผิด ข้อความที่ถูกคือ...", "ส่งผิด ที่ถูกคือ..."],
+  ["DISREGARD", "ไม่ต้องสนใจข้อความนั้น", "ไม่ต้องสนใจ"],
+  ["HOW DO YOU READ", "ถามว่าได้ยินชัดระดับไหน", "ได้ยินชัดแค่ไหน"],
+  ["I SAY AGAIN", "พูดซ้ำเพื่อให้ชัดหรือเพื่อเน้น", "พูดซ้ำเพื่อเน้น"],
+  ["MAINTAIN", "คงไว้ตามเงื่อนไขที่ระบุ หรือใช้ตามความหมายตรง เช่น maintain VFR", "คงไว้ตามที่ระบุ"],
+  ["MONITOR", "ฟังความถี่ที่ระบุไว้", "ฟังความถี่"],
+  ["NEGATIVE", "ไม่ หรือ ไม่อนุญาต หรือ ไม่ถูกต้อง หรือ ทำไม่ได้", "ไม่ / ไม่อนุญาต"],
+  ["OVER", "ส่งจบแล้ว และรอคำตอบ ปกติไม่ใช้ในการสื่อสาร VHF", "จบการส่ง รอตอบ"],
+  ["OUT", "จบการติดต่อนี้ ไม่ต้องตอบ ปกติไม่ใช้ในการสื่อสาร VHF", "จบ ไม่ต้องตอบ"],
+  ["READ BACK", "ทวนข้อความทั้งหมด หรือส่วนที่ระบุ กลับมาตามที่ได้รับ", "ทวนข้อความกลับมา"],
+  ["RECLEARED", "clearance ล่าสุดมีการเปลี่ยน อันใหม่ใช้แทนอันเดิมทั้งหมดหรือบางส่วน", "clearance ใหม่แทนอันเดิม"],
+  ["REPORT", "ขอให้แจ้งข้อมูลต่อไปนี้", "แจ้งข้อมูลมา"],
+  ["REQUEST", "อยากทราบ... หรือ ต้องการขอ...", "ขอ/อยากทราบ"],
+  ["ROGER", "ได้รับข้อความล่าสุดครบแล้ว ห้ามใช้ตอบสิ่งที่ต้อง read back หรือคำถามที่ต้องตอบ AFFIRM/NEGATIVE", "ได้รับครบแล้ว"],
+  ["SAY AGAIN", "ขอให้พูดซ้ำทั้งหมด หรือส่วนที่ระบุ", "ขอให้พูดซ้ำ"],
+  ["SPEAK SLOWER", "ขอให้พูดช้าลง", "พูดช้าลง"],
+  ["STANDBY", "รอ แล้วจะเรียกกลับ ไม่ได้แปลว่าอนุญาตหรือปฏิเสธ", "รอ แล้วจะเรียก"],
+  ["UNABLE", "ทำตามคำขอ คำสั่ง หรือ clearance ไม่ได้ ปกติตามด้วยเหตุผล", "ทำตามไม่ได้"],
+  ["WILCO", "ย่อจาก will comply เข้าใจและจะปฏิบัติตาม", "เข้าใจและจะทำตาม"],
+  ["WORDS TWICE", "เมื่อใช้ขอ: สื่อสารยาก ขอให้ส่งทุกคำหรือกลุ่มคำสองครั้ง", "ขอให้ส่งคำละสองครั้ง"]
+];
+const PRON = [["0","ZE-RO"],["1","WUN"],["2","TOO"],["3","TREE"],["4","FOW-er"],["5","FIFE"],["6","SIX"],["7","SEV-en"],["8","AIT"],["9","NIN-er"],[".","DAY-SEE-MAL"],["100","HUN-dred"],["1000","TOU-SAND"]];
+const PSRC = `${A10} 5.2.1.4.3.1`;
+function deck() {
+  return [
+    ...WORDS.map(([w, th]) => ({ id: "w:" + w, cat: "คำมาตรฐาน", f: w, b: th, s: WSRC })),
+    ...TIPS.map((t, i) => ({ id: "t:" + i, cat: "เคล็ดลับ", f: t.h, b: t.p, s: t.s })),
+    ...PRON.map(([d, s]) => ({ id: "n:" + d, cat: "ออกเสียงตัวเลข", f: d, b: s, s: PSRC, big: true }))
+  ];
+}
+const PMODES = [
+  { k: "cards", t: "แฟลชการ์ด" }, { k: "order", t: "เรียงคำ" }, { k: "match", t: "จับคู่" },
+  { k: "spot", t: "หาจุดผิด" }, { k: "listen", t: "ฟังแล้วพิมพ์" }
+];
+const P = { mode: "cards", last: null, t: null };
+const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+function pTask() { const save = SEL, m = D.mode; SEL = TOPICS.filter(t => t.k !== "fav").map(t => t.k); D.mode = "hear"; const t = buildTask(null); SEL = save; D.mode = m; return t; }
+function setPMode(k) { P.mode = k; renderPModes(); nextPrac(); }
+function renderPModes() {
+  const box = $("pModes"); box.innerHTML = "";
+  PMODES.forEach(m => { const b = el("button", "pmode", m.t); b.setAttribute("aria-pressed", m.k === P.mode); b.onclick = () => setPMode(m.k); box.append(b); });
+  $("hPrac").textContent = PMODES.find(m => m.k === P.mode).t;
+}
+function nextPrac() {
+  $("pFb").hidden = true; $("pFb").innerHTML = ""; $("pSrc").textContent = "";
+  ({ cards: pCards, order: pOrder, match: pMatch, spot: pSpot, listen: pListen })[P.mode]();
+}
+function pDone(pct, title, rows, src) {
+  const box = $("pFb"); box.hidden = false; box.innerHTML = "";
+  const g = pct >= 100 ? "good" : pct >= 70 ? "mid" : "bad";
+  box.className = "pfb result " + g;
+  const fb = el("div", "fb"); fb.innerHTML = MASCOT; fb.append(el("b", null, title)); box.append(fb);
+  (rows || []).forEach(([k, v]) => { const d = el("div"); d.append(el("div", "eyebrow", k), el("div", "model", v)); box.append(d); });
+  if (src && src.length) { const s = el("div"); s.append(el("div", "eyebrow", "อ้างอิง")); const u = el("ul", "src"); src.forEach(x => u.append(el("li", null, x))); s.append(u); box.append(s); }
+  const nx = el("button", "pill", "ข้อถัดไป"); nx.onclick = nextPrac; box.append(nx);
+  recordStat(pct);
+  setTimeout(() => box.scrollIntoView({ behavior: calm() ? "auto" : "smooth", block: "nearest" }), 60);
+}
+
+/* flashcards with simple spaced repetition: a miss sends the card back to box 0 */
+function pCards() {
+  const box = $("pBody"); box.innerHTML = "";
+  const all = deck(), B = store.get("atc-cards", {});
+  const pool = all.filter(c => c.id !== P.last), w = pool.map(c => 5 - Math.min(4, B[c.id] || 0));
+  let r = Math.random() * w.reduce((a, b) => a + b, 0), c = pool[0];
+  for (let i = 0; i < pool.length; i++) { r -= w[i]; if (r <= 0) { c = pool[i]; break; } }
+  P.last = c.id;
+  const known = all.filter(x => (B[x.id] || 0) >= 3).length;
+  box.append(el("p", "hint", `จำแม่นแล้ว ${known} จาก ${all.length} ใบ · แตะการ์ดเพื่อพลิก`));
+  const card = el("button", "flip"); card.setAttribute("aria-label", "พลิกการ์ด");
+  const fr = el("span", "face front"); fr.append(el("small", null, c.cat), el("strong", c.big ? "big" : null, c.f));
+  const bk = el("span", "face back"); bk.append(el("small", null, c.cat), el("span", "bt", c.b), el("span", "bs", c.s));
+  card.append(fr, bk); box.append(card);
+  const row = el("div", "row two");
+  const no = el("button", "sm bad", "ยังไม่แม่น"), ok = el("button", "sm good", "จำได้");
+  no.disabled = ok.disabled = true; row.append(no, ok); box.append(row);
+  card.onclick = () => { card.classList.toggle("flipped"); no.disabled = ok.disabled = false; };
+  const ans = good => { const B2 = store.get("atc-cards", {}); B2[c.id] = good ? Math.min(4, (B2[c.id] || 0) + 1) : 0; store.set("atc-cards", B2); recordStat(good ? 100 : 0); pCards(); };
+  no.onclick = () => ans(false); ok.onclick = () => ans(true);
+}
+
+/* word order: rebuild the controller's instruction from shuffled tiles */
+function pOrder() {
+  const t = pTask(); P.t = t;
+  const full = t.atc(t.vals), cs = csText(t.cs), rest = full.slice(cs.length).replace(/^,\s*/, "");
+  const target = [cs + ",", ...rest.split(/\s+/)];
+  const box = $("pBody"); box.innerHTML = "";
+  const q = el("div", "card"); q.append(el("div", "count", "เรียงเป็นคำสั่ง ATC"), el("p", "cs", cs), el("div", "meta", `${t.ad.app} · ${t.ad.icao}`), el("div", "ask", "สั่ง: " + t.thai)); box.append(q);
+  const ans = el("div", "tiles answer"), bank = el("div", "tiles bank");
+  ans.setAttribute("aria-label", "คำตอบ"); bank.setAttribute("aria-label", "บล็อกคำ");
+  box.append(ans, bank);
+  const chk = el("button", "pill", "ตรวจ"); chk.disabled = true; box.append(chk);
+  shuffle(target.map((w, i) => ({ w, i }))).forEach(o => {
+    const b = el("button", "tile", o.w); b.dataset.w = o.w;
+    b.onclick = () => { (b.parentNode === bank ? ans : bank).append(b); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); chk.disabled = bank.children.length > 0; };
+    bank.append(b);
+  });
+  chk.onclick = () => {
+    const got = [...ans.children].map(b => b.dataset.w);
+    let pos = 0; got.forEach((w, i) => { const right = w === target[i]; if (right) pos++; ans.children[i].classList.add(right ? "ok" : "no"); });
+    [...ans.children].forEach(b => { b.disabled = true; }); chk.hidden = true;
+    const pct = Math.round(pos / target.length * 100);
+    pDone(pct, pct === 100 ? "เรียงถูกทั้งประโยค!" : `ถูกตำแหน่ง ${pos} จาก ${target.length} คำ`, [["ประโยคที่ถูก", full]], t.src);
+  };
+}
+
+/* matching pairs against the clock */
+function pMatch() {
+  const box = $("pBody"); box.innerHTML = "";
+  const useNum = Math.random() < 0.35;
+  const pairs = useNum ? shuffle(PRON).slice(0, 6).map(([a, b]) => [a, b]) : shuffle(WORDS).slice(0, 6).map(w => [w[0], w[2]]);
+  const src = useNum ? [PSRC] : [WSRC];
+  box.append(el("p", "hint", useNum ? "จับคู่ตัวเลขกับคำออกเสียง ICAO" : "จับคู่คำมาตรฐานกับความหมาย"));
+  const timer = el("div", "mtimer", "0.0 วินาที"); box.append(timer);
+  const grid = el("div", "mgrid"); box.append(grid);
+  const L = el("div", "mcol"), R = el("div", "mcol"); grid.append(L, R);
+  let sel = null, miss = 0, left = pairs.length; const t0 = performance.now();
+  const iv = setInterval(() => { if (!document.body.contains(timer)) return clearInterval(iv); timer.textContent = ((performance.now() - t0) / 1000).toFixed(1) + " วินาที"; }, 100);
+  const mk = (col, txt, k, side) => { const b = el("button", "mitem" + (useNum && side === "L" ? " num" : ""), txt); b.dataset.k = k; b.dataset.s = side; col.append(b);
+    b.onclick = () => {
+      if (b.disabled) return;
+      if (!sel || sel.dataset.s === side) { if (sel) sel.classList.remove("sel"); sel = b; b.classList.add("sel"); return; }
+      if (sel.dataset.k === k) { [sel, b].forEach(x => { x.classList.remove("sel"); x.classList.add("ok"); x.disabled = true; }); sel = null; left--;
+        if (!left) { clearInterval(iv); const s = (performance.now() - t0) / 1000; const pct = Math.max(0, 100 - miss * 15);
+          pDone(pct, miss ? `ครบแล้ว ผิด ${miss} ครั้ง` : "จับคู่ครบไม่ผิดเลย!", [["เวลา", s.toFixed(1) + " วินาที"], ...pairs.map(p => ["", p[0] + "  =  " + p[1]])].slice(0, 1), src); }
+      } else { miss++; [sel, b].forEach(x => { x.classList.remove("sel"); x.classList.add("no"); setTimeout(() => x.classList.remove("no"), 450); }); sel = null; }
+    }; };
+  shuffle(pairs).forEach((p, i) => mk(L, p[0], p[0], "L"));
+  shuffle(pairs).forEach((p, i) => mk(R, p[1], p[0], "R"));
+}
+
+/* spot the error in a pilot readback */
+function pSpot() {
+  const t = pTask(); P.t = t;
+  let vals = t.vals, wrong = Math.random() < 0.7 && !!t.mutate;
+  if (wrong) { vals = t.mutate(t.vals); if (JSON.stringify(vals) === JSON.stringify(t.vals)) wrong = false; }
+  const good = t.rbText(t.vals).split(/\s+/), said = t.rbText(vals).split(/\s+/);
+  const diff = new Set(); for (let i = 0; i < Math.max(good.length, said.length); i++) if (good[i] !== said[i]) diff.add(i);
+  const box = $("pBody"); box.innerHTML = "";
+  box.append(el("p", "hint", "อ่านคำสั่ง แล้วแตะคำที่นักบินทวนผิด ถ้าทวนถูกทั้งหมดให้กดปุ่มด้านล่าง"));
+  const log = el("div", "log"); box.append(log);
+  logTo(log, "ATC", t.atc(t.vals), "atc");
+  const row = el("div", "tx pilot"); row.append(el("span", "who", "PILOT"));
+  const words = el("span", "what spotwords");
+  said.forEach((w, i) => { const b = el("button", "sw", w); b.onclick = () => finish(i); words.append(b, " "); });
+  words.append(el("span", null, ", " + csText(t.cs)));
+  row.append(words); log.append(row);
+  const rr = el("div", "row two");
+  const hear = el("button", "sm", "ฟังนักบิน"); hear.onclick = () => speak(`${t.rb(vals)}, ${csSay(t.cs)}`, t.voice);
+  const okb = el("button", "sm good", "ทวนถูกทั้งหมด"); okb.onclick = () => finish(-1);
+  rr.append(hear, okb); box.append(rr);
+  function finish(i) {
+    [...words.querySelectorAll(".sw")].forEach((b, j) => { b.disabled = true; if (diff.has(j)) b.classList.add("no"); }); okb.disabled = true;
+    const right = wrong ? i >= 0 && diff.has(i) : i < 0;
+    if (i >= 0 && !diff.has(i)) words.querySelectorAll(".sw")[i].classList.add("miss");
+    pDone(right ? 100 : 0, right ? (wrong ? "จับได้! นักบินทวนผิดตรงนี้" : "ถูกต้อง readback ครบ") : (wrong ? "ยังไม่ใช่ จุดที่ผิดคือคำที่ขีดแดง" : "readback นี้ถูกแล้ว"),
+      [["นักบินทวน", t.rbText(vals)], ["ที่ถูก", t.rbText(t.vals)]], [RB_SRC, ...t.src]);
+  }
+}
+
+/* listen and type what the pilot said */
+function pListen() {
+  const t = pTask(); P.t = t;
+  const say = `${t.rb(t.vals)}, ${csSay(t.cs)}`, text = `${t.rbText(t.vals)}, ${csText(t.cs)}`;
+  const box = $("pBody"); box.innerHTML = "";
+  box.append(el("p", "hint", "กดฟังนักบิน แล้วพิมพ์สิ่งที่ได้ยิน (ตัวเลขพิมพ์เป็นตัวเลขได้)"));
+  const play = el("button", "bigplay"); play.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+  play.append(el("span", null, "ฟังนักบิน")); play.onclick = () => { play.classList.add("on"); speak(say, t.voice).then(() => play.classList.remove("on")); };
+  box.append(play);
+  const ta = el("textarea"); ta.id = "pTx"; ta.rows = 2; ta.placeholder = "พิมพ์สิ่งที่ได้ยิน"; ta.setAttribute("aria-label", "สิ่งที่ได้ยิน"); box.append(ta);
+  const chk = el("button", "pill", "ตรวจ"); box.append(chk);
+  chk.onclick = () => {
+    const a = norm(text).toks, b = norm(ta.value).toks;
+    const dp = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+    for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+    const pct = a.length ? Math.round(dp[a.length][b.length] / Math.max(a.length, b.length) * 100) : 0;
+    chk.hidden = true; ta.disabled = true;
+    pDone(pct, pct === 100 ? "ได้ยินครบทุกคำ!" : `ตรงกัน ${pct}%`, [["นักบินพูดว่า", text]], [RB_SRC]);
+  };
+}
+
 /* ---------- game layer: learning path, XP, streak, celebrations ---------- */
 const MASCOT = `<svg class="tower" viewBox="0 0 120 140" aria-hidden="true"><path class="t-base" d="M36 128h48l-5 9H41z"/><rect class="t-shaft" x="47" y="74" width="26" height="56" rx="7"/><rect class="t-win2" x="54" y="90" width="12" height="7" rx="3"/><rect class="t-win2" x="54" y="104" width="12" height="7" rx="3"/><path class="t-roof" d="M30 30h60a5 5 0 0 1 0 10H30a5 5 0 0 1 0-10z"/><path class="t-ant" d="M60 30V14"/><circle class="t-light" cx="60" cy="12" r="4.5"/><path class="t-cab" d="M22 40h76l-9 36H31z"/><path class="t-glass" d="M30 46h60l-6 22H36z"/><g class="t-eyes"><circle cx="49" cy="57" r="6.5"/><circle cx="71" cy="57" r="6.5"/><circle class="t-shine" cx="51" cy="54.5" r="2"/><circle class="t-shine" cx="73" cy="54.5" r="2"/></g><path class="t-smile" d="M54 71q6 4.5 12 0"/><path class="t-band" d="M19 56C19 14 101 14 101 56"/><rect class="t-cup" x="11" y="48" width="13" height="20" rx="6"/><rect class="t-cup" x="96" y="48" width="13" height="20" rx="6"/><path class="t-boom" d="M102 66c0 12-8 17-19 17"/><circle class="t-micb" cx="81" cy="83" r="4"/></svg>`;
 const GI = {
@@ -1570,6 +1828,11 @@ const GI = {
   alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>',
   pilot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>',
   atc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="2"/><rect x="17" y="13" width="4" height="6" rx="2"/><path d="M19 19c0 2-3 2-6 2"/></svg>',
+  cards: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><rect x="7" y="3" width="13" height="16" rx="2.5"/><path d="M4 7v12a2 2 0 0 0 2 2h9"/></svg>',
+  order: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="7" height="5" rx="1.5"/><rect x="14" y="5" width="7" height="5" rx="1.5"/><rect x="3" y="14" width="18" height="5" rx="1.5"/></svg>',
+  match: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="7" r="2.5"/><circle cx="18" cy="17" r="2.5"/><path d="M8.5 7h3a3 3 0 0 1 3 3v4a3 3 0 0 0 3 3"/></svg>',
+  spot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v3.5M10.5 13.5v.2"/></svg>',
+  listen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>',
   doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h5"/></svg>'
 };
 const STAR_S = on => `<svg viewBox="0 0 24 24" aria-hidden="true"><path class="${on ? "on" : "off"}" stroke-width="1.6" d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>`;
@@ -1579,11 +1842,13 @@ function unitsList() {
   const u = [
     { c: "c-pri", n: 1, t: "ซ้อมสั่งการ ทีละหัวข้อ", p: "ให้คำสั่งนักบิน แล้วฟัง readback",
       nodes: TOPICS.filter(t => t.k !== "fav").map(t => ({ key: t.k, t: t.t, icon: TOPIC_ICON[t.k] || "star", go: () => goTopic(t.k) })) },
-    { c: "c-amb", n: 2, t: "อ่านตัวเลขแบบ ICAO", p: "FL, QNH, squawk, ความถี่",
+    { c: "c-mint", n: 2, t: "ทวนความเข้าใจ", p: "แฟลชการ์ด เรียงคำ จับคู่ หาจุดผิด ฟังแล้วพิมพ์",
+      nodes: PMODES.map(m => ({ key: "p-" + m.k, t: m.t, icon: m.k, go: () => { P.mode = m.k; renderPModes(); nextPrac(); location.hash = "#practice"; } })) },
+    { c: "c-amb", n: 3, t: "อ่านตัวเลขแบบ ICAO", p: "FL, QNH, squawk, ความถี่",
       nodes: [{ key: "num", t: "เลือกคำอ่านที่ถูก", icon: "hash", go: () => { location.hash = "#numbers"; } }] },
-    { c: "c-cor", n: 3, t: "ฉุกเฉินกับพี่เอ", p: "MAYDAY, PAN PAN, วิทยุขัดข้อง",
+    { c: "c-cor", n: 4, t: "ฉุกเฉินกับพี่เอ", p: "MAYDAY, PAN PAN, วิทยุขัดข้อง",
       nodes: [{ key: "scen", t: "โจทย์สุ่มฉุกเฉิน", icon: "alert", go: () => { location.hash = "#scenario"; } }] },
-    { c: "c-vio", n: 4, t: "ICAO English", p: "plain language เมื่อ phraseology ไม่พอ",
+    { c: "c-vio", n: 5, t: "ICAO English", p: "plain language เมื่อ phraseology ไม่พอ",
       nodes: [{ key: "eng-pilot", t: "พูดแบบนักบิน", icon: "pilot", go: () => { setEngRole("pilot"); location.hash = "#english"; } },
               { key: "eng-atc", t: "ตอบแบบ ATC", icon: "atc", go: () => { setEngRole("atc"); location.hash = "#english"; } }] }
   ];
@@ -1629,6 +1894,7 @@ function progKey() {
   const v = (location.hash || "#home").slice(1);
   if (v === "drill") return (SEL.length === 1 && SEL[0] === "fav") ? "fav" : (D.task && D.task.topic) || "level";
   if (v === "english") return "eng-" + E.role;
+  if (v === "practice") return "p-" + P.mode;
   return { scenario: "scen", numbers: "num", loa: "loa" }[v] || "other";
 }
 const SESS = {};
@@ -1666,7 +1932,7 @@ renderResult = function (box, r, src, onCoach) {
 };
 
 /* ---------- routing ---------- */
-const VIEWS = { home: "v-home", drill: "v-drill", scenario: "v-scen", english: "v-eng", numbers: "v-num" };
+const VIEWS = { home: "v-home", drill: "v-drill", scenario: "v-scen", english: "v-eng", practice: "v-prac", numbers: "v-num" };
 function route() {
   const h = (location.hash || "#home").slice(1), v = VIEWS[h] ? h : "home";
   Object.entries(VIEWS).forEach(([k, id]) => { $(id).hidden = k !== v; });
@@ -1689,12 +1955,13 @@ $("sTx").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey
 $("eNext").onclick = nextEng; $("eNext2").onclick = nextEng; $("ePlay").onclick = engPlay; $("eSend").onclick = engSend; $("eMic").onclick = () => micClick("e");
 $("eRolePilot").onclick = () => setEngRole("pilot"); $("eRoleAtc").onclick = () => setEngRole("atc");
 $("eTx").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); engSend(); } });
+$("pNext").onclick = nextPrac;
 $("nNext").onclick = nextNum; $("nNext2").onclick = nextNum; $("nSay").onclick = () => speak(N.q.say, chooseVoice());
 $("rate").oninput = e => { $("rateV").textContent = e.target.value; };
 if ("speechSynthesis" in window) speechSynthesis.onvoiceschanged = loadVoices;
 window.addEventListener("hashchange", route);
 
-loadVoices(); renderTip(); renderPron(); $("sMic").hidden = true; $("eMic").hidden = true; renderCrit(); nextEng(); nextDrill(); nextScenario(); nextNum(); route();
+loadVoices(); renderTip(); renderPron(); $("sMic").hidden = true; $("eMic").hidden = true; renderCrit(); nextEng(); nextDrill(); nextScenario(); nextNum(); renderPModes(); nextPrac(); route();
 
 /* browser speech recognition, used when the page runs as a normal website (Chrome, Edge, Safari) */
 function webSpeechDict() {
