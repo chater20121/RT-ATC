@@ -498,6 +498,8 @@ details{border:2px solid var(--line)}
 #v-scen.know #sSpeak,#v-scen.know #sPlay,#v-scen.know #sMic,#v-scen.know #sLog{display:none}
 .sspeak summary{cursor:pointer;font-family:var(--display);font-size:14.5px;color:var(--muted);padding:8px 2px}
 #sOpts .opt{font-family:var(--body)}
+.whybox{border-left:4px solid var(--mint);background:var(--surface);border-radius:10px;padding:8px 12px;margin:6px 0;font-family:var(--body);font-size:16px;line-height:1.65;color:var(--ink)}
+.whybox.miss{border-left-color:var(--bad)}
 .qzcats{margin-top:-2px}
 .qzbar{display:flex;justify-content:space-between;font-family:var(--display);font-size:14.5px;color:var(--muted);margin:4px 2px 6px}
 .qztrack{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin-bottom:12px}
@@ -920,6 +922,7 @@ const SCENARIOS = [
       src: [`${A10} 5.3.2.2.1 a) สถานีที่ถูกเรียกต้องตอบรับ distress message ทันที`, `${D9432} 9.2.1 ตัวอย่างการตอบ ROGER MAYDAY`, `${D4444} 12.3.1.8 l) QNH (number)`, `${AIP} ${ad.p218} AD 2.18 ชื่อหน่วย ${ad.app}`],
       checks: [{ label: "รับทราบด้วย roger mayday", any: ["roger mayday"], crit: true }, { label: "มีคำว่า QNH", any: ["qnh"], crit: true }, { label: `ค่า QNH ${qnh}`, num: qnh, crit: true },
                { label: `บอกชื่อหน่วย ${ad.app}`, any: ad.appAlt, crit: false }],
+      why: "MAYDAY คือ distress สถานีที่ถูกเรียกต้องรับทราบทันทีด้วย ROGER MAYDAY แล้วค่อยให้ข้อมูลที่ช่วยนักบิน เช่น QNH ข้ออื่นเป็นคำพูดของสถานการณ์อื่น (PAN PAN, วิทยุขัดข้อง, emergency descent ฯลฯ)",
       reply: `roger, QNH ${qnh}, ${csText(cs)}`, replySay: `roger, QNH ${sayQNH(qnh)}, ${csSay(cs)}` };
   },
   function panpan(ad) {
@@ -932,6 +935,7 @@ const SCENARIOS = [
       src: [`${D9432} 9.3.1 ตัวอย่างตอบ urgency: NUMBER 1 CLEARED ... APPROACH`, `${D4444} 12.3.3.2 f) CLEARED (type of approach) APPROACH [RUNWAY (number)]`, `${AIP} ${ad.p224} AD 2.24 approach ของ ${ad.icao}`],
       checks: [{ label: "บอกลำดับ number one", any: ["number 1"], crit: false }, { label: "ใช้คำว่า cleared", any: ["cleared"], crit: true }, { label: `ชนิด approach: ${type}`, any: [typeWord], crit: true },
                { label: "มีคำว่า approach", any: ["approach"], crit: true }, { label: `runway ${rwy}`, num: parseInt(rwy, 10), crit: true }],
+      why: "PAN PAN คือ urgency นักบินขอลงก่อน ตัวอย่างใน Doc 9432 ตอบด้วยการให้ลำดับ NUMBER 1 แล้วให้ approach clearance ตามรูปแบบ CLEARED (ชนิด) APPROACH RUNWAY (เลข)",
       reply: `number one, cleared ${type} approach runway ${rwy}, ${csText(cs)}`, replySay: `number one, cleared ${sayApch(type)} approach runway ${sayDigits(rwy)}, ${csSay(cs)}` };
   },
   function rcf(ad) {
@@ -942,6 +946,7 @@ const SCENARIOS = [
       model: `${csText(cs)}, reply not received, if you read squawk ident`,
       src: [`${D4444} 12.4.1.9 c) REPLY NOT RECEIVED (instructions)`, `${D4444} 12.4.1.9 d) IF YOU READ [manoeuvre instructions or SQUAWK (code or IDENT)]`, `${D4444} 12.4.3.7 a) SQUAWK [(code)] [AND] IDENT`, `${D9432} 9.5.5 นักบินที่วิทยุขัดข้องตั้ง code 7600`],
       checks: [{ label: "บอก reply not received", any: ["reply not received"], crit: false }, { label: "ใช้ if you read", any: ["if you read"], crit: true }, { label: "สั่ง squawk ident", any: ["squawk ident", "squawk and ident", "ident"], crit: true }],
+      why: "เรียกแล้วไม่มีเสียงตอบ ให้บอก REPLY NOT RECEIVED แล้วใช้ IF YOU READ ตามด้วยคำสั่งที่เห็นได้บนจอ เช่น SQUAWK IDENT ถ้าเห็น IDENT แปลว่านักบินยังได้ยิน แค่ส่งกลับไม่ได้",
       reply: "", sysAfter: "บนจอเห็น IDENT ของเครื่อง แปลว่านักบินได้ยินแต่ส่งไม่ได้" };
   },
   function emerDescent(ad) {
@@ -953,6 +958,7 @@ const SCENARIOS = [
       model: `Attention all aircraft in the vicinity of ${ad.city}, emergency descent in progress from flight level ${from}`,
       noCs: true,
       src: [`${D4444} 12.3.2.5 b) ATTENTION ALL AIRCRAFT IN THE VICINITY OF (location) EMERGENCY DESCENT IN PROGRESS FROM (level)`, `${D9432} 9.4 ตัวอย่างประกาศ emergency descent`],
+      why: "ประกาศนี้พูดถึงเครื่องทุกลำแถวนั้น จึงไม่ขึ้นต้นด้วย callsign ใช้รูปแบบ ATTENTION ALL AIRCRAFT IN THE VICINITY OF (ที่ไหน) EMERGENCY DESCENT IN PROGRESS FROM (ระดับ) เพื่อให้ลำอื่นรู้ว่ามีเครื่องกำลังลดระดับฉุกเฉินผ่านมา",
       checks: [{ label: "ขึ้นต้น attention all aircraft", any: ["attention all aircraft"], crit: true }, { label: `บอกพื้นที่ (${ad.city})`, any: [ad.city.toLowerCase()], crit: false },
                { label: "emergency descent in progress", any: ["emergency descent in progress"], crit: true }, { label: `จาก FL${pad3(from)}`, num: from, crit: true }],
       reply: "" };
@@ -966,6 +972,7 @@ const SCENARIOS = [
       model: `${csText(cs)}, squawk MAYDAY`,
       src: [`${D4444} 12.4.3.9 SQUAWK MAYDAY [CODE SEVEN-SEVEN-ZERO-ZERO]`, `${D9432} 9.2.1.2 code ฉุกเฉิน 7700`],
       checks: [{ label: "สั่ง squawk mayday (หรือ code 7700)", any: ["squawk mayday", "squawk 7700", "code 7700"], crit: true }],
+      why: "รับ MAYDAY แล้วแต่จอยังไม่แสดงฉุกเฉิน ให้สั่ง SQUAWK MAYDAY ซึ่งก็คือ code 7700 เป้าบนจอจะแสดงภาวะฉุกเฉินให้ทุกหน่วยเห็น",
       reply: `squawk MAYDAY, ${csText(cs)}`, replySay: `squawk Mayday, ${csSay(cs)}` };
   },
   function silence(ad) {
@@ -976,6 +983,7 @@ const SCENARIOS = [
       ask: `กำลังคุม MAYDAY ของ ${csText(cs)} อยู่ แต่ ${csText(other)} เรียกเข้ามาแทรก สั่ง ${csText(other)} ให้หยุดส่ง`,
       model: `${csText(other)}, stop transmitting, MAYDAY`,
       src: [`${A10} 5.3.2.3.1 สถานีที่คุม distress traffic สั่งเงียบด้วย STOP TRANSMITTING ตามด้วย MAYDAY`, `${D9432} 9.2.2 ตัวอย่าง (callsign) STOP TRANSMITTING, MAYDAY`],
+      why: "ระหว่างคุม distress ถ้ามีลำอื่นส่งแทรก สถานีที่คุมสั่งให้เงียบด้วย (callsign) STOP TRANSMITTING ตามด้วย MAYDAY เพื่อให้ความถี่ว่างไว้สำหรับเครื่องที่ฉุกเฉิน",
       checks: [{ label: "ใช้ stop transmitting", any: ["stop transmitting"], crit: true }, { label: "ตามด้วย mayday", any: ["mayday"], crit: true }],
       reply: "" };
   },
@@ -987,6 +995,7 @@ const SCENARIOS = [
       ask: "นักบินยกเลิก distress แล้ว ให้ประกาศบนความถี่ว่าจบ distress traffic (ถือว่าได้รับอนุญาตจากผู้มีอำนาจแล้ว)",
       model: `All stations, ${ad.app}, distress traffic ended`, noCs: true,
       src: [`${A10} 5.3.2.5.3 ประกาศยุติด้วยคำว่า DISTRESS TRAFFIC ENDED`, `${D9432} 9.2.3 ตัวอย่าง ALL STATIONS ... DISTRESS TRAFFIC ENDED`],
+      why: "เมื่อ distress จบแล้ว ต้องประกาศให้ทุกสถานีรู้ว่าใช้ความถี่ตามปกติได้ ด้วย ALL STATIONS, (ชื่อหน่วย), DISTRESS TRAFFIC ENDED",
       checks: [{ label: "ขึ้นต้น all stations", any: ["all stations"], crit: true }, { label: `บอกชื่อหน่วย ${ad.app}`, any: ad.appAlt, crit: false }, { label: "distress traffic ended", any: ["distress traffic ended"], crit: true }],
       reply: "" };
   }
@@ -1183,6 +1192,7 @@ function renderResult(box, r, src, onCoach) {
     const d = el("span", null, x.label); if (x.note) d.append(el("small", null, x.note)); li.append(d); ul.append(li); });
   box.append(ul);
   const m = el("div"); m.append(el("div", "eyebrow", "รูปแบบที่ถูก"), el("div", "model", r.model)); box.append(m);
+  if (r.why) { const w = el("div"); w.append(el("div", "eyebrow", "อธิบายง่ายๆ"), el("div", "whybox", r.why)); box.append(w); }
   const s = el("div"); s.append(el("div", "eyebrow", "อ้างอิง")); const su = el("ul", "src"); (src || []).forEach(x => su.append(el("li", null, x))); s.append(su); box.append(s);
   if (sampleFn && onCoach) {
     const b = el("button", "sm dark", "ให้พี่เอวิจารณ์"); const c = el("div", "coach"); c.hidden = true;
@@ -1379,7 +1389,7 @@ function scenKnow() {
       if (SC.done) return; SC.done = true;
       [...box.children].forEach(c => { c.disabled = true; if (c.textContent === q.right) c.classList.add("right"); else if (c === b) c.classList.add("wrong"); });
       const ok = t === q.right;
-      renderResult($("sResult"), { pct: ok ? 100 : 0, model: q.right, text: ok ? "ถูกต้องตามเอกสาร" : "ยังไม่ถูก",
+      renderResult($("sResult"), { pct: ok ? 100 : 0, model: q.right, why: q.why, text: ok ? "ถูกต้องตามเอกสาร" : "ยังไม่ถูก",
         items: [{ st: ok ? "ok" : "bad", label: "เลือกคำตอบตามเอกสาร", note: ok ? "" : "ดูคำตอบที่ถูกและข้ออ้างอิงด้านล่าง" }] }, q.src);
     };
     box.append(b);
@@ -1400,7 +1410,7 @@ function scenOpts(s, ad) {
       [...box.children].forEach(c => { c.disabled = true; if (c.textContent === s.model) c.classList.add("right"); else if (c === b) c.classList.add("wrong"); });
       const ok = t === s.model;
       logTo($("sLog"), "ATC", t, "atc");
-      renderResult($("sResult"), { pct: ok ? 100 : 0, model: s.model, text: ok ? "เลือกถูก ตรงกับสถานการณ์" : "ยังไม่ถูก",
+      renderResult($("sResult"), { pct: ok ? 100 : 0, model: s.model, why: s.why, text: ok ? "เลือกถูก ตรงกับสถานการณ์" : "ยังไม่ถูก",
         items: [{ st: ok ? "ok" : "bad", label: "เลือกข้อความที่ตรงกับโจทย์", note: ok ? "" : `ข้อที่เลือกใช้กับสถานการณ์: ${from[t]}` }] }, s.src);
       if (ok && s.reply) logTo($("sLog"), "PILOT", s.reply, "pilot");
       if (ok && s.sysAfter) logTo($("sLog"), "SYS", s.sysAfter, "sys");
@@ -1413,7 +1423,7 @@ async function scenSend() {
   const text = $("sTx").value.trim(); if (!text) { $("sTx").focus(); return; }
   const s = SC.s; logTo($("sLog"), "ATC", text, "atc"); $("sTx").value = ""; $("sPartial").textContent = "";
   const g = grade(s, s.checks, text);
-  renderResult($("sResult"), { ...g, model: s.model }, s.src, (b, c) => askCoach(b, c, { items: g.items, src: s.src, task: s.ask, model: s.model, text, pilot: s.pilot }));
+  renderResult($("sResult"), { ...g, model: s.model, why: s.why }, s.src, (b, c) => askCoach(b, c, { items: g.items, src: s.src, task: s.ask, model: s.model, text, pilot: s.pilot }));
   if (!s.noCs && g.c === "none") { logTo($("sLog"), "SYS", "นักบินไม่ตอบ เพราะไม่ได้ยิน callsign ของตัวเอง", "sys"); return; }
   if (!s.noCs && g.c === "partial") logTo($("sLog"), "SYS", "callsign ไม่ครบหรือไมค์ถอดไม่ชัด นักบินยังตอบต่อ (หักคะแนนข้อ callsign)", "sys");
   if (g.critFail) { if (!s.noCs && s.reply) { logTo($("sLog"), "PILOT", `Say again, ${csText(s.cs)}`, "pilot"); await speak(`Say again, ${csSay(s.cs)}`, SC.voice); } return; }
@@ -1777,7 +1787,7 @@ function pDone(pct, title, rows, src) {
   const g = pct >= 100 ? "good" : pct >= 70 ? "mid" : "bad";
   box.className = "pfb result " + g;
   const fb = el("div", "fb"); fb.innerHTML = MASCOT; fb.append(el("b", null, title)); box.append(fb);
-  (rows || []).forEach(([k, v]) => { const d = el("div"); d.append(el("div", "eyebrow", k), el("div", "model", v)); box.append(d); });
+  (rows || []).forEach(([k, v]) => { const d = el("div"), c = k === "อธิบายง่ายๆ" ? "whybox" : k === "ข้อที่คุณเลือก" ? "whybox miss" : "model"; d.append(el("div", "eyebrow", k), el("div", c, v)); box.append(d); });
   if (src && src.length) { const s = el("div"); s.append(el("div", "eyebrow", "อ้างอิง")); const u = el("ul", "src"); src.forEach(x => u.append(el("li", null, x))); s.append(u); box.append(s); }
   const nx = el("button", "pill", "ข้อถัดไป"); nx.onclick = nextPrac; box.append(nx);
   recordStat(pct);
@@ -1791,8 +1801,10 @@ function pDone(pct, title, rows, src) {
    Doc 4444 12.4.1.9 + Doc 9432 9.5.5 / 9.2.1.2 (codes 7600 / 7700). Callsigns and values are fictional. */
 const rwysOf = ad => [...new Set(ad.apch.map(a => a[1]))].sort().join("/");
 const apLabel = a => `${a[0]} RWY ${a[1]}`;
-function pMcq(kind, q, right, wrongs, why, src, extra) {
-  if (QZ.cap) { QZ.cap.push({ kind, q, right, wrongs, why, src }); return; }
+/* explanation rows: why the right answer is right, and what the picked wrong option actually is */
+function whyRows(why, notes, picked, ok) { return [...(!ok && notes && notes[picked] ? [["ข้อที่คุณเลือก", `${picked}: ${notes[picked]}`]] : []), ...(why ? [["อธิบายง่ายๆ", why]] : [])]; }
+function pMcq(kind, q, right, wrongs, why, src, extra, notes) {
+  if (QZ.cap) { QZ.cap.push({ kind, q, right, wrongs, why, src, notes }); return; }
   const box = $("pBody"); box.innerHTML = "";
   box.append(el("div", "eyebrow", kind));
   if (extra) box.append(extra);
@@ -1803,25 +1815,28 @@ function pMcq(kind, q, right, wrongs, why, src, extra) {
     b.onclick = () => {
       [...opts.children].forEach(c => { c.disabled = true; if (c.textContent === right) c.classList.add("right"); else if (c === b) c.classList.add("wrong"); });
       const ok = t === right;
-      pDone(ok ? 100 : 0, ok ? "ถูกต้อง!" : "ยังไม่ถูก", [["คำตอบ", right], ...(why ? [["เพราะ", why]] : [])], src);
+      pDone(ok ? 100 : 0, ok ? "ถูกต้อง!" : "ยังไม่ถูก", [["คำตอบ", right], ...whyRows(why, notes, t, ok)], src);
     };
     opts.append(b);
   });
 }
 function others(ad, f) { return shuffle(AERODROMES.filter(a => a !== ad).map(f)).filter((v, i, s) => s.indexOf(v) === i && v !== f(ad)).slice(0, 3); }
+function adSum(ad) { return `${ad.icao} = ${ad.city} · APP: ${ad.app} ${ad.appFreq} · TWR: ${ad.twr} ${ad.twrFreq}`; }
+function adNotes(ad, f, say) { const n = {}; AERODROMES.filter(a => a !== ad).forEach(a => { const v = f(a); if (!(v in n)) n[v] = say(a); }); return n; }
 function pAd() {
-  const ad = pick(AERODROMES), s218 = `${AIP} ${ad.p218} AD 2.18`, s224 = `${AIP} ${ad.p224} AD 2.24`;
+  const ad = pick(AERODROMES), s218 = `${AIP} ${ad.p218} AD 2.18`, s224 = `${AIP} ${ad.p224} AD 2.24`, of = a => `เป็นของ ${a.icao} (${a.city})`;
   const Q = [
-    () => pMcq("ICAO location indicator", `${ad.icao} คือสนามบินใด`, ad.city, others(ad, a => a.city), null, [s218]),
-    () => pMcq("ชื่อเรียกหน่วย", `นักบินที่จะเข้า ${ad.icao} ต้องเรียก approach ว่าอะไร`, ad.app, others(ad, a => a.app), null, [s218]),
-    () => pMcq("ความถี่ APP", `ความถี่ ${ad.app} (${ad.icao}) คือเท่าไร`, ad.appFreq, others(ad, a => a.appFreq), "ดูความถี่หลักใน AD 2.18 ของสนามนั้น", [s218]),
-    () => pMcq("ความถี่ TWR", `ความถี่ ${ad.twr} (${ad.icao}) คือเท่าไร`, ad.twrFreq, others(ad, a => a.twrFreq), null, [s218]),
-    () => pMcq("รันเวย์", `${ad.icao} ${ad.city} มีรันเวย์อะไร`, rwysOf(ad), others(ad, rwysOf), null, [s224]),
+    () => pMcq("ICAO location indicator", `${ad.icao} คือสนามบินใด`, ad.city, others(ad, a => a.city), adSum(ad), [s218], null, adNotes(ad, a => a.city, a => `ใช้รหัส ${a.icao}`)),
+    () => pMcq("ชื่อเรียกหน่วย", `นักบินที่จะเข้า ${ad.icao} ต้องเรียก approach ว่าอะไร`, ad.app, others(ad, a => a.app), adSum(ad), [s218], null, adNotes(ad, a => a.app, of)),
+    () => pMcq("ความถี่ APP", `ความถี่ ${ad.app} (${ad.icao}) คือเท่าไร`, ad.appFreq, others(ad, a => a.appFreq), `ดูความถี่หลักใน AD 2.18 ของสนามนั้น: ${adSum(ad)}`, [s218], null, adNotes(ad, a => a.appFreq, a => `เป็นความถี่ ${a.app} (${a.icao})`)),
+    () => pMcq("ความถี่ TWR", `ความถี่ ${ad.twr} (${ad.icao}) คือเท่าไร`, ad.twrFreq, others(ad, a => a.twrFreq), adSum(ad), [s218], null, adNotes(ad, a => a.twrFreq, a => `เป็นความถี่ ${a.twr} (${a.icao})`)),
+    () => pMcq("รันเวย์", `${ad.icao} ${ad.city} มีรันเวย์อะไร`, rwysOf(ad), others(ad, rwysOf), `${ad.icao} มี approach ประกาศไว้: ${ad.apch.map(apLabel).join(", ")}`, [s224], null, adNotes(ad, rwysOf, of)),
     () => { const pool = AERODROMES.filter(a => a !== ad).flatMap(a => a.apch.map(apLabel)), mine = ad.apch.map(apLabel);
-      const wr = shuffle([...new Set(pool)].filter(x => !mine.includes(x))).slice(0, 3);
-      pMcq("Instrument approach", `ข้อใดเป็น instrument approach ที่มีประกาศของ ${ad.icao}`, pick(mine), wr, `${ad.icao} มี ${mine.join(", ")}`, [s224]); },
+      const wr = shuffle([...new Set(pool)].filter(x => !mine.includes(x))).slice(0, 3), n = {};
+      AERODROMES.filter(a => a !== ad).forEach(a => a.apch.map(apLabel).forEach(x => { if (!(x in n)) n[x] = of(a); }));
+      pMcq("Instrument approach", `ข้อใดเป็น instrument approach ที่มีประกาศของ ${ad.icao}`, pick(mine), wr, `${ad.icao} มี ${mine.join(", ")}`, [s224], null, n); },
     () => { const f = ad.appFreq, w = AERODROMES.filter(a => a !== ad);
-      pMcq("ความถี่ → หน่วย", `ได้ยินบนความถี่ ${f} น่าจะเป็นหน่วยใด`, ad.app, w.map(a => a.app).slice(0, 3), null, [s218]); }
+      pMcq("ความถี่ → หน่วย", `ได้ยินบนความถี่ ${f} น่าจะเป็นหน่วยใด`, ad.app, w.map(a => a.app).slice(0, 3), adSum(ad), [s218], null, adNotes(ad, a => a.app, a => `ใช้ความถี่ ${a.appFreq} (${a.icao})`)); }
   ];
   pick(Q)();
 }
@@ -1861,27 +1876,30 @@ const EMG = [
   ["ไฟไหม้ในห้องโดยสาร ดับไม่ได้", "MAYDAY"], ["เครื่องยนต์ดับทั้งสองเครื่อง", "MAYDAY"], ["รักษาระดับไม่ได้ และบินผ่านภูเขา", "MAYDAY"],
   ["ผู้โดยสารป่วย ต้องการลงก่อน แต่เครื่องบินปกติ", "PAN PAN"], ["นักบินต้องการกลับไปลงเพราะไฟเตือนระบบหนึ่งติด ยังบินได้ปกติ", "PAN PAN"], ["นักบินเห็นเรืออีกลำกำลังจม แจ้งเพื่อช่วยคนอื่น", "PAN PAN"]
 ];
+const EMG_DEF = { MAYDAY: "MAYDAY = distress: distress คือถูกคุกคามด้วยอันตรายร้ายแรงหรือใกล้ตัว และต้องการความช่วยเหลือทันที", "PAN PAN": "PAN PAN = urgency: เรื่องความปลอดภัยของอากาศยาน คนบนเครื่อง หรือคนที่มองเห็น แต่ยังไม่ต้องการความช่วยเหลือทันที" };
 function pCaseEmg() {
   const [sit, ans] = pick(EMG);
   pMcq("แยก distress / urgency", `สถานการณ์: ${sit} ตามนิยาม ICAO ข้อนี้ควรเป็นข้อความแบบใด`, ans, [ans === "MAYDAY" ? "PAN PAN" : "MAYDAY", "ไม่ต้องประกาศ แค่แจ้งข้อมูลปกติ"],
     ans === "MAYDAY" ? "distress คือถูกคุกคามด้วยอันตรายร้ายแรงหรือใกล้ตัว และต้องการความช่วยเหลือทันที" : "urgency คือเรื่องความปลอดภัยของอากาศยาน คนบนเครื่อง หรือคนที่มองเห็น แต่ยังไม่ต้องการความช่วยเหลือทันที (นักบินเป็นคนตัดสินใจจริง)",
-    [`${A10} 5.3.1.1 นิยาม distress และ urgency`]);
+    [`${A10} 5.3.1.1 นิยาม distress และ urgency`], null, { [ans === "MAYDAY" ? "PAN PAN" : "MAYDAY"]: "ใช้กับอีกนิยามหนึ่ง: " + EMG_DEF[ans === "MAYDAY" ? "PAN PAN" : "MAYDAY"] });
 }
 function pCaseCode() {
   const cs = newCs();
   const Q = [
-    () => pMcq("วิเคราะห์ code", `เป้า ${csText(cs)} เปลี่ยน squawk เป็น 7600 และไม่ตอบวิทยุ หมายความว่าอะไร`, "นักบินวิทยุขัดข้อง (radio communication failure)", ["ฉุกเฉินทั่วไป (emergency)", "ขอเปลี่ยนความถี่"], null, [`${D9432} 9.5.5 นักบินที่วิทยุขัดข้องตั้ง code 7600`]),
-    () => pMcq("วิเคราะห์ code", `เป้า ${csText(cs)} เปลี่ยน squawk เป็น 7700 หมายความว่าอะไร`, "อากาศยานอยู่ในภาวะฉุกเฉิน", ["วิทยุขัดข้อง", "บิน VFR ปกติ"], null, [`${D9432} 9.2.1.2 code ฉุกเฉิน 7700`]),
-    () => pMcq("เลือกวิธีทำ", `${csText(cs)} ไม่ตอบวิทยุ คุณสงสัยว่าวิทยุขัดข้อง ควรพูดอะไร`, `${csText(cs)} REPLY NOT RECEIVED, IF YOU READ SQUAWK IDENT`, [`${csText(cs)} SQUAWK 7600`, `${csText(cs)} SAY AGAIN ALL AFTER`], "ให้นักบินตอบด้วยการทำ IDENT ถ้ายังรับฟังได้", [`${D4444} 12.4.1.9 c) REPLY NOT RECEIVED`, `${D4444} 12.4.1.9 d) IF YOU READ [manoeuvre instructions or SQUAWK (code or IDENT)]`])
+    () => pMcq("วิเคราะห์ code", `เป้า ${csText(cs)} เปลี่ยน squawk เป็น 7600 และไม่ตอบวิทยุ หมายความว่าอะไร`, "นักบินวิทยุขัดข้อง (radio communication failure)", ["ฉุกเฉินทั่วไป (emergency)", "ขอเปลี่ยนความถี่"], "จำคู่กัน: 7600 = วิทยุขัดข้อง, 7700 = ฉุกเฉิน", [`${D9432} 9.5.5 นักบินที่วิทยุขัดข้องตั้ง code 7600`], null, { "ฉุกเฉินทั่วไป (emergency)": "นั่นคือ code 7700" }),
+    () => pMcq("วิเคราะห์ code", `เป้า ${csText(cs)} เปลี่ยน squawk เป็น 7700 หมายความว่าอะไร`, "อากาศยานอยู่ในภาวะฉุกเฉิน", ["วิทยุขัดข้อง", "บิน VFR ปกติ"], "จำคู่กัน: 7700 = ฉุกเฉิน, 7600 = วิทยุขัดข้อง", [`${D9432} 9.2.1.2 code ฉุกเฉิน 7700`], null, { "วิทยุขัดข้อง": "นั่นคือ code 7600" }),
+    () => pMcq("เลือกวิธีทำ", `${csText(cs)} ไม่ตอบวิทยุ คุณสงสัยว่าวิทยุขัดข้อง ควรพูดอะไร`, `${csText(cs)} REPLY NOT RECEIVED, IF YOU READ SQUAWK IDENT`, [`${csText(cs)} SQUAWK 7600`, `${csText(cs)} SAY AGAIN ALL AFTER`], "บอกว่าไม่ได้รับคำตอบ (REPLY NOT RECEIVED) แล้วใช้ IF YOU READ ให้นักบินตอบด้วยการทำ IDENT ถ้ายังรับฟังได้ เราจะเห็นบนจอแม้นักบินส่งกลับไม่ได้", [`${D4444} 12.4.1.9 c) REPLY NOT RECEIVED`, `${D4444} 12.4.1.9 d) IF YOU READ [manoeuvre instructions or SQUAWK (code or IDENT)]`], null,
+      { [`${csText(cs)} SQUAWK 7600`]: "7600 คือ code ที่นักบินตั้งเองเมื่อวิทยุขัดข้อง คำสั่งนี้ไม่ได้บอกว่านักบินยังได้ยินเราหรือไม่", [`${csText(cs)} SAY AGAIN ALL AFTER`]: "SAY AGAIN ใช้ขอให้พูดซ้ำส่วนที่ไม่ชัด แต่กรณีนี้ไม่มีเสียงตอบมาเลย" })
   ];
   pick(Q)();
 }
 function pCs() {
   const o = pick(OPS), oth = OPS.filter(x => x !== o), n = rand(101, 989);
   pick([
-    () => pMcq("Callsign", `${o.d} (${o.co}) ใช้ telephony ว่าอะไร`, o.tel, oth.map(x => x.tel), null, [OPS_SRC]),
-    () => pMcq("Callsign", `ได้ยิน "${o.tel} ${sayDigits(n).toUpperCase()}" คือสายการบินใด`, `${o.co} (${o.d})`, oth.map(x => `${x.co} (${x.d})`), null, [OPS_SRC]),
-    () => pMcq("Callsign", `flight plan ${o.d}${n} ต้องเรียกทางวิทยุว่าอะไร`, `${o.tel} ${n}`, [`${o.d} ${n}`, ...oth.slice(0, 1).map(x => `${x.tel} ${n}`)], "ใช้ telephony designator ตามด้วยเลขเที่ยวบิน", [OPS_SRC])
+    () => pMcq("Callsign", `${o.d} (${o.co}) ใช้ telephony ว่าอะไร`, o.tel, oth.map(x => x.tel), `${o.d} = ${o.co} เรียกทางวิทยุว่า ${o.tel}`, [OPS_SRC], null, Object.fromEntries(oth.map(x => [x.tel, `เป็นของ ${x.co} (${x.d})`]))),
+    () => pMcq("Callsign", `ได้ยิน "${o.tel} ${sayDigits(n).toUpperCase()}" คือสายการบินใด`, `${o.co} (${o.d})`, oth.map(x => `${x.co} (${x.d})`), `${o.tel} = ${o.co} (${o.d})`, [OPS_SRC], null, Object.fromEntries(oth.map(x => [`${x.co} (${x.d})`, `ใช้ telephony ${x.tel}`]))),
+    () => pMcq("Callsign", `flight plan ${o.d}${n} ต้องเรียกทางวิทยุว่าอะไร`, `${o.tel} ${n}`, [`${o.d} ${n}`, ...oth.slice(0, 1).map(x => `${x.tel} ${n}`)], `ใช้ telephony designator ตามด้วยเลขเที่ยวบิน: ${o.d} ใช้ ${o.tel}`, [OPS_SRC], null,
+      { [`${o.d} ${n}`]: `${o.d} คือรหัส 3 ตัวอักษรใน flight plan ไม่ใช่คำเรียกทางวิทยุ`, ...Object.fromEntries(oth.slice(0, 1).map(x => [`${x.tel} ${n}`, `${x.tel} เป็นของ ${x.co} (${x.d})`])) })
   ])();
 }
 function pCase() { pick([pCaseRb, pCaseRb, pCaseEmg, pCaseCode])(); }
@@ -2147,10 +2165,135 @@ const KNOW = [
   { d: "B", k: "Radio check", q: "ระดับความชัด readability 3 หมายถึงอะไร", o: ["อ่านได้แต่ยาก (readable but with difficulty)", "อ่านได้ชัดเจน", "อ่านไม่ได้"], r: "2.8.4.3" },
   { d: "B", k: "Emergency descent", q: "{cs} ประกาศ emergency descent ผู้ควบคุมต้องทำอะไรก่อน", o: ["ทำทุกอย่างเพื่อปกป้องเครื่องอื่น เช่น ประกาศเตือนแล้วตามด้วยคำสั่งเฉพาะ", "สั่งให้หยุดลดระดับ", "รอจนลดระดับเสร็จ"], r: "9.4.1, 9.4.2" }
 ];
+/* plain-Thai explanations for KNOW, same order (index = KNOW index). Reasons come from the same paragraph or its Note; "จำง่ายๆ" lines are memory aids only. */
+const KNOW_WHY = [
+  /* 0 */ "Doc 4444 ห้ามใช้ speed control กับเครื่องที่กำลังเข้าหรืออยู่ใน holding เลย ถ้าต้องการจัดลำดับให้ใช้วิธีอื่น เช่น EAT หรือ vector หลังออกจาก holding",
+  /* 1 */ "ตั้งแต่ FL250 ขึ้นไปให้ปรับเป็น Mach ทีละ 0.01 (ประมาณ 6 kt IAS ที่ระดับสูง) ต่ำกว่า FL250 จึงใช้ IAS ทีละ 10 kt จำง่ายๆ: สูง = Mach, ต่ำ = knots",
+  /* 2 */ "FL180 ต่ำกว่า FL250 จึงใช้ IAS ทีละ 10 kt (20 km/h) ส่วน Mach ใช้ตั้งแต่ FL250 ขึ้นไป",
+  /* 3 */ "ถ้าลดความเร็วลำแรก ลำหลังจะไล่ทันกันหมด เอกสารจึงให้เริ่มจากลดลำสุดท้ายหรือเร่งลำแรกก่อน แล้วไล่ปรับลำที่อยู่ตรงกลางตามลำดับ",
+  /* 4 */ "ช่วงเริ่ม descent จาก cruising level การให้ turbojet ลดต่ำกว่า 250 kt IAS ต้องได้ความยินยอมจากนักบินก่อน ไม่ได้ห้าม แต่ห้ามสั่งเอาเอง",
+  /* 5 */ "การลดระดับเร็วกับการลดความเร็วมากเป็นสิ่งที่ปกติทำพร้อมกันไม่ได้ เครื่องอาจต้องบินระดับสักพักเพื่อลดความเร็วก่อนจะลดระดับต่อ จึงควรเลี่ยงคำสั่งแบบนี้",
+  /* 6 */ "ต่ำกว่า FL150 ลด turbojet ได้ถึงไม่น้อยกว่า 220 kt IAS เพราะใกล้ความเร็วต่ำสุดแบบ clean configuration แล้ว และเอกสารอยากให้เครื่องขาเข้าบินแบบ clean ให้นานที่สุด",
+  /* 7 */ "บน intermediate และ final approach ให้ปรับความเร็วแค่เล็กน้อย ไม่เกิน ±20 kt IAS ตัวเลือก ±40 kt เป็นกับดัก เพราะ 40 km/h เท่ากับประมาณ 20 kt",
+  /* 8 */ "หลังผ่าน 4 NM จาก threshold ไม่ใช้ speed control แล้ว เพราะนักบินต้องทำ stabilized approach (ความเร็วและ configuration นิ่ง) ประมาณ 3 NM จาก threshold",
+  /* 9 */ "เมื่อไม่ต้องจำกัดความเร็วแล้ว ต้องบอกนักบินเสมอ เพราะคำสั่งความเร็วจะค้างอยู่จนกว่าผู้ควบคุมจะยกเลิก นักบินจะไม่เลิกเอง",
+  /* 10 */ "ถ้านักบินทำความเร็วที่สั่งไม่ได้ ต้องเปลี่ยนไปใช้วิธีอื่นให้ได้ระยะห่าง เช่น vector หรือแยกระดับ การสั่งซ้ำไม่ช่วยอะไร",
+  /* 11 */ "คำสั่งความเร็วมีผลไปเรื่อยๆ จนกว่าผู้ควบคุมจะยกเลิกหรือแก้อย่างชัดเจน ไม่ได้หมดเองเมื่อเปลี่ยนความถี่หรือหมดเวลา",
+  /* 12 */ "speed restriction ใน SID/STAR ที่ประกาศไว้ นักบินต้องทำตามจนกว่า ATC จะยกเลิกหรือแก้อย่างชัดเจน บางข้อจำกัดมีไว้ให้เครื่องอยู่ในเส้นทาง RNAV ด้วย",
+  /* 13 */ "เหมือนเรื่องความเร็ว ถ้านักบินทำ rate ที่สั่งไม่ได้ ผู้ควบคุมต้องหาวิธีอื่นมารักษา separation ทันที ไม่ใช่สั่งซ้ำ",
+  /* 14 */ "การเปลี่ยนจาก IFR เป็น VFR ต้องมาจากนักบินเท่านั้น ATC ห้ามชวนทั้งพูดตรงๆ หรือพูดเป็นนัย แม้อากาศจะดีแค่ไหนก็ตาม",
+  /* 15 */ "ต้องใช้คำเฉพาะ CANCELLING MY IFR FLIGHT เท่านั้น คำอื่นอย่าง REQUEST VFR ไม่ถือว่ายกเลิก IFR",
+  /* 16 */ "ปกติ ATC ตอบแค่ IFR FLIGHT CANCELLED AT (เวลา) ไม่ต้องพูดว่า approved เพราะเป็นสิทธิ์ของนักบินที่จะยกเลิกเอง",
+  /* 17 */ "ATC ห้ามปฏิเสธการยกเลิก IFR แต่ถ้ารู้ว่าข้างหน้าน่าจะเจอ IMC ควรบอกนักบินถ้าทำได้ ให้นักบินตัดสินใจเอง",
+  /* 18 */ "HEAVY คือ MTOW ตั้งแต่ 136,000 kg ขึ้นไป (ยกเว้นแบบที่ Doc 8643 ระบุเป็น SUPER) 150,000 kg จึงเป็น HEAVY",
+  /* 19 */ "LIGHT คือ MTOW 7,000 kg หรือน้อยกว่า 5,700 kg จึงเป็น LIGHT",
+  /* 20 */ "MEDIUM คือมากกว่า 7,000 kg แต่น้อยกว่า 136,000 kg จำง่ายๆ: 7 ตัน กับ 136 ตัน เป็นเส้นแบ่ง",
+  /* 21 */ "ต้องพูด HEAVY (หรือ SUPER) ต่อท้าย callsign ในการติดต่อครั้งแรกกับแต่ละหน่วย ATS เพื่อให้ผู้ควบคุมรู้ว่าต้องเว้น wake turbulence",
+  /* 22 */ "เฮลิคอปเตอร์สร้าง vortex แรงเมื่อเทียบกับน้ำหนัก และตอน hover จะมีแรงลมพัดออกไปได้ราว 3 เท่าของเส้นผ่านศูนย์กลางใบพัด จึงต้องให้อยู่ห่างจากเครื่องบินเบา",
+  /* 23 */ "ผ่าน transition layer: ขาไต่ให้พูดเป็น flight level ขาลงให้พูดเป็น altitude จำง่ายๆ: กำลังไปไหน ก็ใช้หน่วยของที่นั่น",
+  /* 24 */ "ขาลงผ่าน transition layer ใช้ altitude เพราะกำลังลงไปใช้ QNH ส่วนขาไต่ใช้ flight level",
+  /* 25 */ "ต้องให้ QNH ครั้งแรกที่อนุญาตให้ลดไป altitude ต่ำกว่า TL รวมถึงใน approach clearance, clearance เข้า circuit และ taxi clearance ขาออก ยกเว้นรู้ว่านักบินได้ค่าไปแล้ว",
+  /* 26 */ "ค่า altimeter setting ที่ให้นักบินต้องปัดลงเป็นจำนวนเต็ม hPa เสมอ 1012.8 จึงเป็น 1012 ไม่ใช่ปัดขึ้นเป็น 1013",
+  /* 27 */ "ต้องให้ TL ล่วงหน้าก่อนเครื่องลงถึง TL จะบอกทางวิทยุ ATIS หรือ data link ก็ได้",
+  /* 28 */ "TL คือ flight level ต่ำสุดที่ใช้ได้ ซึ่งอยู่เหนือ transition altitude (TA) ช่วงระหว่าง TA กับ TL เรียกว่า transition layer",
+  /* 29 */ "ห้ามให้ระดับบินต่ำกว่า minimum flight altitude ที่รัฐกำหนด ยกเว้นหน่วยงานที่รับผิดชอบอนุญาตเฉพาะ",
+  /* 30 */ "position report ทางวิทยุบางพื้นที่ละระดับได้ แต่การเรียกครั้งแรกหลังเปลี่ยนความถี่ต้องบอกระดับเสมอ เพื่อให้ผู้ควบคุมตรวจกับข้อมูลที่มีได้",
+  /* 31 */ "ถ้าถูกกำหนดความเร็วไว้ ต้องบอกความเร็วนั้นในการเรียกครั้งแรกหลังเปลี่ยนความถี่ เพื่อให้หน่วยใหม่รู้ว่ามีข้อจำกัดอยู่",
+  /* 32 */ "ถ้า position report ไม่มาตามเวลา ห้ามถือว่าเวลาประมาณการยังถูก และต้องรีบติดตามให้ได้รายงาน ถ้ามีผลกับการควบคุมลำอื่น",
+  /* 33 */ "special air-report ต้องทำเมื่อเจอ turbulence ระดับ moderate หรือ severe (รวมถึง icing ระดับเดียวกัน) ระดับ light ไม่ต้อง",
+  /* 34 */ "volcanic ash cloud อยู่ในรายการที่ต้องทำ special air-report (ข้อ g) เพราะอันตรายต่อเครื่องยนต์และเครื่องอื่นต้องรู้",
+  /* 35 */ "รายงาน braking action แย่กว่าที่แจ้ง ต้องส่งต่อให้ผู้ดำเนินการสนามบินทันที เพราะเป็นคนรับผิดชอบสภาพ runway",
+  /* 36 */ "นอกพื้นที่ RVSM: ต่ำกว่า FL290 ใช้ 1,000 ft ตั้งแต่ FL290 ขึ้นไปใช้ 2,000 ft (ในพื้นที่ RVSM ใช้ 1,000 ft ได้ถึง FL410)",
+  /* 37 */ "นอกพื้นที่ RVSM ตั้งแต่ FL290 ขึ้นไปต้องใช้ 2,000 ft ถ้าเป็นพื้นที่ RVSM ตามข้อตกลงภูมิภาค ใช้ 1,000 ft ได้ต่ำกว่า FL410",
+  /* 38 */ "ปกติให้เข้าระดับที่ลำอื่นรายงานว่าออกแล้วได้ ยกเว้น 3 กรณี: มี severe turbulence, ลำบนทำ cruise climb, หรือสมรรถนะต่างกันจนอาจได้ separation ไม่พอ ต้องรอให้ลำนั้นรายงานผ่านระดับที่ห่างพอก่อน",
+  /* 39 */ "ใน holding เดียวกัน ถ้าลดด้วยอัตราต่างกันมาก ลำบนอาจไล่ลำล่างทัน จึงอาจกำหนด rate สูงสุดให้ลำบนและ rate ต่ำสุดให้ลำล่าง",
+  /* 40 */ "ลำที่อยู่ที่ cruising level นั้นแล้วได้สิทธิ์ก่อน ถ้ามีหลายลำอยู่ระดับเดียวกัน ลำที่อยู่ข้างหน้าได้สิทธิ์ก่อน",
+  /* 41 */ "ถ้าบินไปปลายทางเดียวกัน ควรให้ระดับที่เรียงพร้อมสำหรับลำดับ approach ไว้ตั้งแต่แรก จะได้ไม่ต้องสลับระดับทีหลัง",
+  /* 42 */ "unlawful interference เป็นสถานการณ์พิเศษ เอกสารให้ใช้ separation มากกว่าค่าต่ำสุด เพื่อความปลอดภัยของทั้งลำนั้นและลำอื่น",
+  /* 43 */ "ต้องจัด separation แบบอื่น (หรือค่าต่ำสุดอื่น) ให้พร้อม ก่อน ที่ค่าเดิมจะถูกละเมิด ไม่ใช่รอให้ละเมิดแล้วค่อยแก้",
+  /* 44 */ "ถ้าระบบของเครื่องเสื่อมจนกระทบ separation ที่ใช้อยู่ ผู้ควบคุมต้องเปลี่ยนไปใช้ separation แบบอื่นที่เหมาะสม นักบินต้องแจ้งทันทีที่รู้",
+  /* 45 */ "ถ้าไม่มี lateral separation ต้องใช้ vertical separation ระหว่างเครื่องใน holding กับเครื่องอื่นที่อยู่ภายใน 5 นาทีบินจาก holding area",
+  /* 46 */ "holding ที่อยู่ติดกัน ถ้าพื้นที่ holding ไม่ได้แยกกันด้านข้าง ต้องแยกด้วย vertical separation minimum",
+  /* 47 */ "ถ้าทั้งสองลำแยก track กันอย่างน้อย 45° ทันทีหลังวิ่งขึ้น จะได้ lateral separation เร็ว จึงเว้นแค่ 1 นาที",
+  /* 48 */ "ถ้าลำแรกเร็วกว่าลำหลัง 40 kt ขึ้นไป บน track เดียวกัน ลำแรกจะห่างออกไปเรื่อยๆ จึงเว้นแค่ 2 นาที",
+  /* 49 */ "ถ้าลำหลังต้องไต่ผ่านระดับลำแรกบน track เดียวกันขณะไม่มี vertical separation ต้องเว้น 5 นาที และต้องดูแลให้ระยะนี้ไม่ลดลง",
+  /* 50 */ "เครื่องขาเข้า straight-in: ขาออกขึ้นได้ทุกทิศจนถึง 5 นาทีก่อนขาเข้าถึง instrument runway หลังจากนั้นต้องขึ้นในทิศที่ต่างอย่างน้อย 45° และก่อน 3 นาที",
+  /* 51 */ "หลังขาเข้าเริ่ม procedure turn ขาออกต้องขึ้นในทิศต่างจากทิศกลับของ approach อย่างน้อย 45° และต้องขึ้นก่อนขาเข้าถึงต้น instrument runway อย่างน้อย 3 นาที",
+  /* 52 */ "ลงจอดตามหลัง HEAVY: MEDIUM 2 นาที, LIGHT 3 นาที จำง่ายๆ: ยิ่งเครื่องหลังเบา ยิ่งต้องเว้นนาน",
+  /* 53 */ "LIGHT ลงตามหลัง HEAVY หรือ MEDIUM ต้องเว้น 3 นาที เพราะเครื่องเบาโดน wake แล้วเสี่ยงที่สุด",
+  /* 54 */ "LIGHT ลงตามหลัง MEDIUM ก็ 3 นาทีเหมือนตามหลัง HEAVY (ข้อ e ใช้กับทั้ง HEAVY และ MEDIUM)",
+  /* 55 */ "ตามหลัง SUPER ต้องเว้นมากที่สุด: HEAVY 2, MEDIUM 3, LIGHT 4 นาที",
+  /* 56 */ "วิ่งขึ้นตามหลัง HEAVY บน runway เดียวกัน: LIGHT หรือ MEDIUM เว้น 2 นาที",
+  /* 57 */ "LIGHT วิ่งขึ้นตามหลัง MEDIUM เว้น 2 นาที (ขาออกใช้ 2 นาที แต่ขาลง LIGHT ตาม MEDIUM ใช้ 3 นาที ระวังสับสน)",
+  /* 58 */ "ถ้าเครื่องหลังขึ้นจากกลาง runway จะลอยขึ้นใกล้จุดที่ลำหน้าเพิ่ง rotate ซึ่ง wake แรง จึงเพิ่มเป็น 3 นาที (จากปกติ 2 นาที)",
+  /* 59 */ "เครื่องหนักทำ low/missed approach แล้วเครื่องเบาจะขึ้นสวนทาง ต้องเว้น: ตาม HEAVY 3 นาที (ตาม SUPER 4 นาที, LIGHT ตาม MEDIUM 3 นาที)",
+  /* 60 */ "เมื่อนักบินรายงานเห็นลำหน้าและได้รับคำสั่งให้ follow และรักษาระยะเอง ATC ไม่ต้องให้ wake separation แต่ต้องเตือน caution wake turbulence และนักบินรับผิดชอบระยะเอง",
+  /* 61 */ "ต้องครบทุกเงื่อนไข: class D หรือ E, VMC กลางวัน, ช่วงไต่หรือลด, ที่หรือต่ำกว่า 10,000 ft, นักบินขอ และอีกลำยินยอม",
+  /* 62 */ "จะบอก wake category ใน essential traffic ก็ต่อเมื่ออีกลำหนักกว่าลำที่รับข้อมูล เพราะเป็นเรื่องที่นักบินต้องระวัง",
+  /* 63 */ "ATC ไม่ต้องแยก VFR กับ VFR (ยกเว้น class B) VFR จึงไม่เป็น essential traffic ของ VFR ด้วยกัน",
+  /* 64 */ "essential traffic ต้องบอก: ทิศทางบิน, แบบเครื่อง (และ wake category ถ้าเกี่ยว), ระดับ และเวลาหรือตำแหน่งที่จะผ่านกัน (หรือตำแหน่งแบบนาฬิกาพร้อมระยะ)",
+  /* 65 */ "ใกล้สนามบิน ถ้าลำหลังรายงานเห็นลำหน้าและรักษาระยะเองได้ ลด separation minima ได้ (อีกกรณีคือผู้ควบคุมหอเห็นทั้งสองลำตลอด)",
+  /* 66 */ "essential local traffic คืออะไรก็ตามบนหรือใกล้ runway ที่จะใช้ หรือในบริเวณขึ้นลง ที่อาจชนกับเครื่องที่กำลังขึ้นหรือลง รวมถึงรถและคน",
+  /* 67 */ "ชื่อ SID อย่างเดียวไม่ได้อนุญาตให้ไต่ตาม profile ต้องมี cleared level ด้วยเสมอ",
+  /* 68 */ "บินตรงไป waypoint บน SID: ข้อจำกัดของจุดที่ถูกข้ามหายไป แต่ข้อจำกัดของจุดที่เหลือข้างหน้ายังต้องทำตาม",
+  /* 69 */ "ถ้า vector ออกนอก SID ข้อจำกัดทั้ง SID ถูกยกเลิก ผู้ควบคุมต้องย้ำ cleared level ให้ข้อจำกัดใหม่ตามจำเป็น และบอกถ้าจะให้กลับเข้า SID",
+  /* 70 */ "CLIMB VIA SID TO = ไต่ถึงระดับที่ให้ ทำตามทั้ง level และ speed restriction ที่ประกาศ และบินตามเส้นทาง SID",
+  /* 71 */ "CLIMB UNRESTRICTED = ยกเลิกทั้ง level และ speed restriction แต่ยังต้องบินตามเส้นทาง (lateral profile) ของ SID",
+  /* 72 */ "CANCEL LEVEL RESTRICTIONS ยกเลิกแค่ level restriction ส่วนเส้นทางและ speed restriction ยังต้องทำตาม",
+  /* 73 */ "standard arrival clearance ต้องมี: callsign, ชื่อ STAR, runway-in-use (ถ้าไม่อยู่ใน STAR), cleared level และข้อมูลอื่นที่จำเป็น",
+  /* 74 */ "ATC เสนอทิศวิ่งขึ้นที่ไม่ทวนลมเพื่อเร่งการขึ้นได้ แต่การตัดสินใจเป็นของ PIC ว่าจะขึ้นเลยหรือรอทิศที่ดีกว่า",
+  /* 75 */ "ถ้าคาดว่า delay เกิน 30 นาที ควรแจ้งผู้ดำเนินการเดินอากาศหรือตัวแทนเมื่อทำได้",
+  /* 76 */ "ลดต่ำกว่า minimum altitude ได้ในบางกรณี เช่น นักบินรายงานเห็นสนามและรักษาการมองเห็นได้, รายงานผ่านจุดที่กำหนด, ทำ visual approach หรือ ATC ระบุตำแหน่งด้วยเรดาร์ คำขอของนักบินอย่างเดียวไม่พอ",
+  /* 77 */ "visual approach จะเป็นนักบินขอเองหรือ ATC เสนอก็ได้ แต่ถ้า ATC เสนอ ต้องได้ความยินยอมจากนักบิน",
+  /* 78 */ "นักบินต้องเห็นพื้นดิน และ ceiling ต้องอยู่ที่หรือสูงกว่าจุดเริ่ม initial approach segment (หรือนักบินรายงานว่าลงด้วย visual ได้แน่)",
+  /* 79 */ "visual approach ไม่ได้ทำให้ ATC หมดหน้าที่ ยังต้องให้ separation กับเครื่องขาเข้าและขาออกอื่นเสมอ",
+  /* 80 */ "ACC ให้ approach clearance กับลำแรกแทนการส่งไป holding fix ได้ แต่ต้องประสานกับ approach control ก่อน",
+  /* 81 */ "หลังเครื่องติดต่อ approach แล้ว ถ้าสภาพอากาศเปลี่ยนสำคัญในบริเวณ take-off/climb-out (เช่น wind shear) ต้องแจ้งทันที ยกเว้นรู้ว่านักบินได้ข้อมูลแล้ว",
+  /* 82 */ "readback ผิดให้พูด NEGATIVE I SAY AGAIN แล้วตามด้วยข้อความที่ถูก ส่วน CORRECTION ใช้เมื่อ ATC เองพูดผิด",
+  /* 83 */ "clearance ที่เกี่ยวกับ runway (เข้า ลง ขึ้น hold short ข้าม backtrack) ต้อง readback เสมอ เพราะถ้าเข้าใจผิดจะอันตรายมาก ส่วนลมและ traffic info รับทราบพอ",
+  /* 84 */ "นักบินจบ readback ด้วย callsign ของตัวเอง ATC จะได้รู้ว่าลำไหนรับคำสั่ง",
+  /* 85 */ "ถ้าไม่แน่ใจว่านักบินทำได้ ให้ต่อท้ายด้วย IF UNABLE แล้วตามด้วยทางเลือก ฝั่งนักบินถ้าทำไม่ได้ต้องตอบ UNABLE พร้อมเหตุผล",
+  /* 86 */ "ห้ามส่ง clearance ขณะนักบิน line up หรือวิ่งขึ้นเด็ดขาด และควรเลี่ยงตอน taxi ยุ่งๆ ทางที่ดีคือส่งก่อน start up เพราะนักบินต้องจดลง",
+  /* 87 */ "คำว่า TAKE OFF ใช้แค่ตอนอนุญาตหรือยกเลิกการวิ่งขึ้น นอกนั้นใช้ DEPARTURE หรือ AIRBORNE เพื่อไม่ให้นักบินเข้าใจผิดว่าได้รับอนุญาตให้ขึ้น",
+  /* 88 */ "ถ้าแก้ส่วนใดของ level clearance ต้องพูด level clearance ทั้งหมดใหม่ ไม่พูดเฉพาะส่วนที่เปลี่ยน เพื่อไม่ให้สับสนกับคำสั่งเดิม",
+  /* 89 */ "IMMEDIATELY ใช้เฉพาะเมื่อต้องทำทันทีด้วยเหตุผลด้านความปลอดภัย ถ้าใช้บ่อยคำนี้จะหมดน้ำหนัก",
+  /* 90 */ "พูดผิดให้พูด CORRECTION ทวนกลุ่มคำสุดท้ายที่ถูก แล้วพูดที่ถูก ถ้าต้องพูดใหม่ทั้งหมดใช้ CORRECTION I SAY AGAIN",
+  /* 91 */ "ช่วงวิ่งขึ้น ไต่ช่วงแรก ช่วงท้ายของ final และ landing roll นักบินงานยุ่งที่สุด การพูดแทรกอาจทำให้เสียสมาธิ จึงพูดเฉพาะเรื่องความปลอดภัย",
+  /* 92 */ "ถ้าจุดสิ้นสุด taxi อยู่เลย runway ต้องบอกชัดว่าอนุญาตข้ามหรือให้ hold short ป้องกันเครื่องเข้า runway โดยไม่ได้รับอนุญาต",
+  /* 93 */ "conditional clearance ที่เกี่ยวกับ active runway ใช้ได้เมื่อทั้งผู้ควบคุมและนักบินเห็นเครื่องหรือรถที่เป็นเงื่อนไข และนักบินต้องระบุตัวลำนั้นถูก",
+  /* 94 */ "ลำดับคือ callsign, เงื่อนไข, clearance, แล้วทวนเงื่อนไขสั้นๆ เช่น (callsign) BEHIND LANDING (type) LINE UP BEHIND",
+  /* 95 */ "ถ้าต้องให้หยุดวิ่งขึ้น สั่งหยุดทันที และพูดคำสั่งพร้อม callsign ซ้ำ เพื่อให้แน่ใจว่าได้ยินในเวลาสั้นๆ",
+  /* 96 */ "รายงาน FINAL เมื่อเลี้ยวเข้า final ภายใน 4 NM (7 km) ถ้าเลี้ยวไกลกว่านั้นรายงาน LONG FINAL",
+  /* 97 */ "straight-in รายงาน LONG FINAL ที่ประมาณ 8 NM (15 km) ถ้ายังไม่ได้ landing clearance ให้รายงาน FINAL อีกครั้งที่ 4 NM",
+  /* 98 */ "ถ้าไม่ได้สั่งอย่างอื่น เครื่อง instrument approach จะทำ missed approach procedure ที่ประกาศ ส่วนเครื่อง VFR จะเข้า traffic circuit ตามปกติ",
+  /* 99 */ "นักบินที่เริ่ม go around เองต้องพูด GOING AROUND และ ATC ควรพูดกับเครื่องที่ go around ให้สั้นที่สุดเพราะนักบินงานหนัก",
+  /* 100 */ "เมื่อ vector เสร็จ ต้องสั่ง resume own navigation พร้อมบอกตำแหน่งและคำสั่งที่จำเป็น นักบินจะได้รู้ว่าตัวเองอยู่ไหนและต้องทำอะไรต่อ",
+  /* 101 */ "ควรบอกเหตุผลที่ vector เว้นแต่เห็นชัดอยู่แล้ว นักบินจะเข้าใจสถานการณ์และวางแผนได้",
+  /* 102 */ "traffic info ใช้ตำแหน่งแบบนาฬิกา 12 ชั่วโมง ระยะทาง ทิศทางบิน และข้อมูลอื่นถ้ามี เช่น แบบเครื่อง ระดับ กำลังไต่หรือลด",
+  /* 103 */ "avoiding action ใช้เมื่อเห็นว่าถ้าไม่ทำทันทีจะเสี่ยงชนกัน ไม่ได้ใช้แค่เพราะมีเครื่องอยู่ใกล้",
+  /* 104 */ "visual approach ไม่ได้แปลว่าบินใน VMC หรือเปลี่ยนเป็น VFR แค่นักบินมองเห็นพื้นดินตามเงื่อนไข เที่ยวบินยังเป็น IFR",
+  /* 105 */ "distress (MAYDAY) มาก่อนทุกอย่าง urgency (PAN PAN) มาก่อนทุกอย่างยกเว้น distress",
+  /* 106 */ "121.5 MHz คือความถี่ฉุกเฉินสากล แต่ไม่ใช่ทุกสถานีที่ฟังตลอด",
+  /* 107 */ "ปกติให้ส่ง distress/urgency บนความถี่ที่ใช้อยู่ เพราะ ATC ที่ดูแลอยู่ช่วยได้เร็วที่สุด ค่อยเปลี่ยนความถี่ถ้าคิดว่าจะได้ความช่วยเหลือดีกว่า",
+  /* 108 */ "ได้ยิน distress หรือ urgency บนความถี่ ต้องงดใช้ความถี่นั้น เว้นแต่ช่วยโดยตรง จนกว่าเหตุจะจบ เพื่อไม่ให้รบกวน",
+  /* 109 */ "ลำดับ distress message: สถานีที่เรียก, callsign, ลักษณะเหตุ, ความตั้งใจของ PIC, ตำแหน่ง ระดับ และ heading แล้วข้อมูลอื่นที่มีประโยชน์",
+  /* 110 */ "ถ้าสถานีที่ถูกเรียกไม่ตอบ สถานีอื่นหรือเครื่องบินลำอื่นต้องตอบและช่วยเท่าที่ทำได้ ไม่ปล่อยให้ distress call ไม่มีคนรับ",
+  /* 111 */ "ถ้าลองทุกความถี่และให้ลำอื่นช่วยแล้วไม่ได้ ให้ส่งข้อความ 2 ครั้งบนความถี่ที่กำหนด ขึ้นต้นด้วย TRANSMITTING BLIND",
+  /* 112 */ "ถ้าแค่ receiver เสีย (ส่งได้แต่ฟังไม่ได้) ขึ้นต้นด้วย TRANSMITTING BLIND DUE TO RECEIVER FAILURE ส่งข้อความซ้ำทั้งหมด และบอกเวลาที่จะส่งครั้งต่อไป",
+  /* 113 */ "ติดต่อไม่ได้ ขั้นแรกขอให้สถานีอื่นหรือเครื่องในเส้นทางช่วยเรียกและ relay ถ้ายังไม่ได้ค่อยส่งแบบ blind",
+  /* 114 */ "ห้ามส่ง ATC clearance แบบ blind ยกเว้นผู้ออก clearance ขอเป็นการเฉพาะ เพราะไม่รู้ว่านักบินได้ยินและจะทำตามหรือไม่",
+  /* 115 */ "RVR หลายจุดเรียงตามทางที่เครื่องวิ่ง: touchdown, mid-point, แล้ว stop end ถ้าบอก 3 จุดตามลำดับนี้ ละชื่อจุดได้",
+  /* 116 */ "สภาพน้ำบน runway ใช้คำ DAMP, WET, WATER PATCHES, FLOODED ตามปริมาณน้ำ",
+  /* 117 */ "ขณะนักบินทำตาม RA ห้ามพยายามเปลี่ยนเส้นทางบินจนกว่านักบินรายงานว่ากลับมาตาม clearance แต่ให้ traffic information ได้",
+  /* 118 */ "ระหว่างทำ RA ผู้ควบคุมไม่ต้องรับผิดชอบ separation ของเครื่องที่ได้รับผลจาก RA จะกลับมารับผิดชอบเมื่อรับทราบรายงานว่ากลับมาตาม clearance แล้ว",
+  /* 119 */ "ปกติห้ามเปลี่ยนชนิด callsign ระหว่างบิน ยกเว้นมี callsign คล้ายกันจนอาจสับสน ATC สั่งให้เปลี่ยนชั่วคราวได้",
+  /* 120 */ "readability scale: 1 อ่านไม่ได้, 2 อ่านได้เป็นบางครั้ง, 3 อ่านได้แต่ยาก, 4 อ่านได้, 5 ชัดเจนมาก",
+  /* 121 */ "เมื่อมี emergency descent ผู้ควบคุมต้องปกป้องเครื่องอื่นทุกทาง เช่น ประกาศเตือนทุกลำ แล้วตามด้วยคำสั่งเฉพาะลำที่เกี่ยวข้อง"
+];
 const KNOW_SRC = { A: D4444, B: D9432 };
 function knowQ() {
-  const x = pick(KNOW), cs = csText(newCs());
-  return { kind: x.k, q: x.q.split("{cs}").join(cs), right: x.o[0], wrongs: x.o.slice(1), src: [`${KNOW_SRC[x.d]} ข้อ ${x.r}`], cs };
+  const i = Math.floor(Math.random() * KNOW.length), x = KNOW[i], cs = csText(newCs());
+  return { kind: x.k, q: x.q.split("{cs}").join(cs), right: x.o[0], wrongs: x.o.slice(1), why: KNOW_WHY[i], src: [`${KNOW_SRC[x.d]} ข้อ ${x.r}`], cs };
 }
 
 /* ---------- silent quiz: multiple choice and typed answers, no mic needed ----------
@@ -2170,19 +2313,27 @@ function qzWrongs(right, make, n) { const out = []; for (let g = 0; g < 30 && ou
 
 /* multiple choice generators: each returns { cat, kind, q, right, wrongs, why, src, log? } */
 const MCQ_GEN = [
-  { cat: "word", f: () => { const [w, , sh] = pick(WORDS); return { kind: "คำมาตรฐาน → ความหมาย", q: `${w} แปลว่าอะไร`, right: sh, wrongs: shuffle(uniq(WORDS.filter(x => x[0] !== w).map(x => x[2]))).filter(x => x !== sh).slice(0, 3), src: [WSRC] }; } },
-  { cat: "word", f: () => { const [w, lg] = pick(WORDS); return { kind: "ความหมาย → คำมาตรฐาน", q: `"${lg}" ใช้คำว่าอะไร`, right: w, wrongs: shuffle(WORDS.filter(x => x[0] !== w).map(x => x[0])).slice(0, 3), src: [WSRC] }; } },
-  { cat: "word", f: () => { const [d, s] = pick(PRON); return { kind: "ออกเสียงตัวเลข", q: `"${d}" ออกเสียงแบบ ICAO ว่าอย่างไร`, right: s, wrongs: shuffle(PRON.filter(x => x[0] !== d).map(x => x[1])).slice(0, 3), src: [PSRC] }; } },
+  { cat: "word", f: () => { const [w, lg, sh] = pick(WORDS), wr = shuffle(uniq(WORDS.filter(x => x[0] !== w).map(x => x[2]))).filter(x => x !== sh).slice(0, 3);
+      return { kind: "คำมาตรฐาน → ความหมาย", q: `${w} แปลว่าอะไร`, right: sh, wrongs: wr, why: `${w} = ${lg}`,
+        notes: Object.fromEntries(wr.map(o => [o, `เป็นความหมายของคำว่า ${WORDS.find(x => x[2] === o)[0]}`])), src: [WSRC] }; } },
+  { cat: "word", f: () => { const [w, lg] = pick(WORDS), wr = shuffle(WORDS.filter(x => x[0] !== w)).slice(0, 3);
+      return { kind: "ความหมาย → คำมาตรฐาน", q: `"${lg}" ใช้คำว่าอะไร`, right: w, wrongs: wr.map(x => x[0]), why: `${w} = ${lg}`,
+        notes: Object.fromEntries(wr.map(x => [x[0], `แปลว่า ${x[1]}`])), src: [WSRC] }; } },
+  { cat: "word", f: () => { const [d, s] = pick(PRON), wr = shuffle(PRON.filter(x => x[0] !== d)).slice(0, 3);
+      return { kind: "ออกเสียงตัวเลข", q: `"${d}" ออกเสียงแบบ ICAO ว่าอย่างไร`, right: s, wrongs: wr.map(x => x[1]), why: `ตามตารางการออกเสียงของ ICAO "${d}" ออกเสียงว่า ${s}`,
+        notes: Object.fromEntries(wr.map(x => [x[1], `เป็นเสียงของ "${x[0]}"`])), src: [PSRC] }; } },
   { cat: "num", f: () => { let q; do { q = pick(NQ)(); } while (new Set([q.right, ...q.wrong]).size < 3); return { kind: "อ่านตัวเลข · " + q.kind, q: `${q.val} อ่านแบบ ICAO ว่าอย่างไร`, right: q.right, wrongs: q.wrong, why: q.why, src: [q.src] }; } },
   { cat: "phr", f: () => { const t = pTask(); if (!t.mutate) return null; const right = t.atc(t.vals);
       const wr = qzWrongs(right, () => t.atc(t.mutate(t.vals)), 2), late = right.slice(csText(t.cs).length).replace(/^,\s*/, "") + ", " + csText(t.cs);
       if (wr.length < 2) wr.push(late);
       return { kind: "เลือกคำสั่งที่ถูก", q: `ต้องการสั่ง ${csText(t.cs)} ให้${t.thai.replace(/^ให้/, "")} ข้อใดถูก`, right, wrongs: wr,
-        why: wr.includes(late) ? "คำสั่ง ATC ขึ้นต้นด้วย callsign ก่อนเสมอ และค่าต้องตรงกับที่ต้องการสั่ง" : null, src: t.src }; } },
+        why: wr.includes(late) ? "คำสั่ง ATC ขึ้นต้นด้วย callsign ก่อนเสมอ และค่าต้องตรงกับที่ต้องการสั่ง" : `ข้อที่ถูกมีค่าตรงกับที่ต้องการสั่ง (${t.thai.replace(/^ให้/, "")}) ข้ออื่นตัวเลขหรือทิศเปลี่ยนไป ก่อนพูดให้เช็คทุกค่าให้ตรง`,
+        notes: { [late]: "ขึ้นต้นด้วยคำสั่งแล้วไปพูด callsign ท้ายสุด คำสั่ง ATC ต้องขึ้นต้นด้วย callsign" }, src: t.src }; } },
   { cat: "phr", f: () => { const t = pTask(); if (!t.mutate) return null; const right = `${t.rbText(t.vals)}, ${csText(t.cs)}`;
       return { kind: "เลือก readback ที่ถูก", log: t.atc(t.vals), q: "นักบินควร readback ว่าอย่างไร", right,
         wrongs: [...qzWrongs(right, () => `${t.rbText(t.mutate(t.vals))}, ${csText(t.cs)}`, 2), `roger, ${csText(t.cs)}`],
-        why: "ต้องทวนค่าที่ได้รับให้ครบและตรง คำว่า ROGER อย่างเดียวใช้ตอบสิ่งที่ต้อง read back ไม่ได้", src: [RB_SRC, WSRC] }; } },
+        why: "ต้องทวนค่าที่ได้รับให้ครบและตรง แล้วจบด้วย callsign ของตัวเอง คำว่า ROGER อย่างเดียวใช้ตอบสิ่งที่ต้อง read back ไม่ได้",
+        notes: { [`roger, ${csText(t.cs)}`]: "ROGER แปลว่าได้รับข้อความแล้วเท่านั้น ใช้แทนการ read back ค่า level, heading, speed, QNH, squawk ไม่ได้" }, src: [RB_SRC, WSRC] }; } },
   { cat: "ad", f: () => qzCapture(pAd) },
   { cat: "ad", f: () => qzCapture(pCs) },
   { cat: "emg", f: () => qzCapture(pCaseEmg) },
@@ -2197,25 +2348,27 @@ const lc = s => String(s).toLowerCase().replace(/[^a-z0-9. ]/g, " ").replace(/\s
 const digitsOf = s => String(s).replace(/[^0-9.]/g, "");
 const TYPE_GEN = [
   { cat: "word", f: () => { const [w, lg] = pick(WORDS); return { kind: "พิมพ์คำมาตรฐาน", q: `"${lg}" ใช้คำว่าอะไร`, ph: "พิมพ์เป็นภาษาอังกฤษ", answer: w,
-      check: s => { const a = lc(s), b = lc(w); return a === b || (b.length >= 6 && lev(a, b) <= 1) ? 100 : 0; }, src: [WSRC] }; } },
+      check: s => { const a = lc(s), b = lc(w); return a === b || (b.length >= 6 && lev(a, b) <= 1) ? 100 : 0; }, why: `${w} = ${lg}`, src: [WSRC] }; } },
   { cat: "num", f: () => { const q = pick(NQ)(); return { kind: "ฟังคำอ่าน → พิมพ์ตัวเลข · " + q.kind, q: `"${q.say.toUpperCase()}" คือค่าเท่าไร`, ph: "พิมพ์เป็นตัวเลข", answer: q.val,
       check: s => digitsOf(s) !== "" && +digitsOf(s) === +digitsOf(q.val) ? 100 : 0, why: q.why, src: [q.src] }; } },
   { cat: "phr", w: 2, f: () => { const t = pTask(); const checks = t.checks(t.vals);
       return { kind: "พิมพ์คำสั่ง ATC", q: `${t.ad.app} · ${csText(t.cs)} · สั่ง: ${t.thai}`, ph: "พิมพ์คำสั่งเต็ม เริ่มด้วย callsign", answer: t.atc(t.vals), area: true,
-        check: s => { const g = grade(t, checks, s); return { pct: g.pct, rows: g.items.filter(i => i.st !== "ok").map(i => ["ยังขาด/ผิด", i.label + (i.note ? ` (${i.note})` : "")]) }; }, src: t.src }; } },
+        check: s => { const g = grade(t, checks, s); return { pct: g.pct, rows: g.items.filter(i => i.st !== "ok").map(i => ["ยังขาด/ผิด", i.label + (i.note ? ` (${i.note})` : "")]) }; },
+        why: "คำสั่ง ATC ขึ้นต้นด้วย callsign ของเครื่อง แล้วตามด้วยคำสั่งและค่าตามรูปแบบในคำตอบที่ถูก ตัวเลขต้องตรงกับที่โจทย์ให้", src: t.src }; } },
   { cat: "phr", f: () => { const t = pTask(); const checks = t.checks(t.vals), task = { ...t, noCs: true };
       return { kind: "พิมพ์ readback", log: t.atc(t.vals), q: "ถ้าคุณเป็นนักบิน ต้อง readback ว่าอย่างไร (ไม่ต้องพิมพ์ callsign)", ph: "พิมพ์ readback", answer: `${t.rbText(t.vals)}, ${csText(t.cs)}`, area: true,
-        check: s => { const g = grade(task, checks, s); return { pct: g.pct, rows: g.items.filter(i => i.st !== "ok").map(i => ["ยังขาด/ผิด", i.label + (i.note ? ` (${i.note})` : "")]) }; }, src: [RB_SRC, ...t.src] }; } },
+        check: s => { const g = grade(task, checks, s); return { pct: g.pct, rows: g.items.filter(i => i.st !== "ok").map(i => ["ยังขาด/ผิด", i.label + (i.note ? ` (${i.note})` : "")]) }; },
+        why: "readback ต้องทวนค่าที่ได้รับให้ครบและตรง (level, heading, speed, QNH, squawk) แล้วจบด้วย callsign ของตัวเอง", src: [RB_SRC, ...t.src] }; } },
   { cat: "ad", f: () => { const ad = pick(AERODROMES), f = pick(["app", "twr"]), v = f === "app" ? ad.appFreq : ad.twrFreq;
-      return { kind: "พิมพ์ความถี่", q: `ความถี่ ${f === "app" ? ad.app : ad.twr} (${ad.icao}) คือเท่าไร`, ph: "เช่น 118.1", answer: v, check: s => digitsOf(s) === v ? 100 : 0, src: [`${AIP} ${ad.p218} AD 2.18`] }; } },
+      return { kind: "พิมพ์ความถี่", q: `ความถี่ ${f === "app" ? ad.app : ad.twr} (${ad.icao}) คือเท่าไร`, ph: "เช่น 118.1", answer: v, check: s => digitsOf(s) === v ? 100 : 0, why: adSum(ad), src: [`${AIP} ${ad.p218} AD 2.18`] }; } },
   { cat: "ad", f: () => { const ad = pick(AERODROMES);
-      return { kind: "พิมพ์ ICAO location indicator", q: `สนามบิน ${ad.city} (${ad.ident}) ใช้รหัส ICAO อะไร`, ph: "4 ตัวอักษร", answer: ad.icao, check: s => s.trim().toUpperCase() === ad.icao ? 100 : 0, src: [`${AIP} ${ad.p218} AD 2.18`] }; } },
+      return { kind: "พิมพ์ ICAO location indicator", q: `สนามบิน ${ad.city} (${ad.ident}) ใช้รหัส ICAO อะไร`, ph: "4 ตัวอักษร", answer: ad.icao, check: s => s.trim().toUpperCase() === ad.icao ? 100 : 0, why: adSum(ad), src: [`${AIP} ${ad.p218} AD 2.18`] }; } },
   { cat: "ad", f: () => { const o = pick(OPS), n = rand(101, 989);
       return { kind: "พิมพ์ callsign", q: `flight plan ${o.d}${n} ต้องเรียกทางวิทยุว่าอะไร`, ph: "พิมพ์ callsign", answer: `${o.tel} ${n}`,
         check: s => callsignState(norm(s), { tel: o.tel, num: n }) === "start" && !norm(s).toks.includes(o.d.toLowerCase()) ? 100 : 0, why: "ใช้ telephony designator ตามด้วยเลขเที่ยวบิน", src: [OPS_SRC] }; } },
   { cat: "emg", f: () => { const [sit, ans] = pick(EMG);
       return { kind: "พิมพ์ MAYDAY หรือ PAN PAN", q: `สถานการณ์: ${sit} ควรขึ้นต้นข้อความด้วยคำใด`, ph: "MAYDAY หรือ PAN PAN", answer: ans,
-        check: s => lc(s).replace(/\s/g, "") === lc(ans).replace(/\s/g, "") ? 100 : 0, src: [`${A10} 5.3.1.1 นิยาม distress และ urgency`] }; } }
+        check: s => lc(s).replace(/\s/g, "") === lc(ans).replace(/\s/g, "") ? 100 : 0, why: EMG_DEF[ans], src: [`${A10} 5.3.1.1 นิยาม distress และ urgency`] }; } }
 ];
 
 function qzPick(gens) {
@@ -2264,7 +2417,7 @@ function pQuiz() {
     b.onclick = () => {
       [...opts.children].forEach(c => { c.disabled = true; if (c.textContent === q.right) c.classList.add("right"); else if (c === b) c.classList.add("wrong"); });
       const ok = t === q.right;
-      pDone(ok ? 100 : 0, ok ? "ถูกต้อง!" : "ยังไม่ถูก", [["คำตอบ", q.right], ...(q.why ? [["เพราะ", q.why]] : [])], q.src);
+      pDone(ok ? 100 : 0, ok ? "ถูกต้อง!" : "ยังไม่ถูก", [["คำตอบ", q.right], ...whyRows(q.why, q.notes, t, ok)], q.src);
     };
     opts.append(b);
   });
@@ -2289,7 +2442,7 @@ function pType() {
     chk.disabled = skip.disabled = true; inp.disabled = true;
     const r = given == null ? 0 : q.check(given), pct = typeof r === "number" ? r : r.pct, extra = typeof r === "number" ? [] : r.rows;
     pDone(pct, pct >= 100 ? "ถูกต้อง!" : given == null ? "เฉลย" : pct >= 70 ? `เกือบแล้ว ${pct}%` : "ยังไม่ถูก",
-      [["คำตอบที่ถูก", q.answer], ...(given ? [["คุณตอบ", given]] : []), ...extra, ...(q.why ? [["เพราะ", q.why]] : [])], q.src);
+      [["คำตอบที่ถูก", q.answer], ...(given ? [["คุณตอบ", given]] : []), ...extra, ...(q.why ? [["อธิบายง่ายๆ", q.why]] : [])], q.src);
   };
   chk.onclick = () => { if (inp.value.trim()) finish(inp.value.trim()); else inp.focus(); };
   skip.onclick = () => finish(null);
