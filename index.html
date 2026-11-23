@@ -765,7 +765,15 @@ const sayFreq = f => f.split(".").map(sayDigits).join(" decimal ");             
 const pad3 = n => String(n).padStart(3, "0");
 const sayApch = t => t === "VOR/DME" ? "V O R D M E" : t.split("").join(" ");
 
-const TELS = ["THAI"]; /* basic callsign for now; more designators later after checking ICAO Doc 8585 */
+/* Thai operators whose telephony was checked verbatim in FAA JO 7340.2P ch.3 (which lists ICAO Doc 8585 designators).
+   THAI (THA) was already in use; other Thai airlines are added only after the same check. */
+const OPS = [
+  { d: "THA", tel: "THAI", co: "Thai Airways International" },
+  { d: "AIQ", tel: "THAI ASIA", co: "Thai AirAsia" },
+  { d: "BKP", tel: "BANGKOK AIR", co: "Bangkok Airways" }
+];
+const OPS_SRC = "FAA JO 7340.2P บทที่ 3 (ICAO 3-letter designator และ telephony จาก ICAO Doc 8585)";
+const TELS = OPS.map(o => o.tel);
 const csText = cs => `${cs.tel} ${cs.num}`;
 const csSay = cs => `${cs.tel[0] + cs.tel.slice(1).toLowerCase()} ${sayDigits(cs.num)}`;
 const newCs = () => ({ tel: pick(TELS), num: rand(101, 989) });
@@ -1012,10 +1020,10 @@ function lev(a, b) {
   return d[a.length][b.length];
 }
 function callsignState(N, cs) {
-  const tel = cs.tel.toLowerCase(), num = String(cs.num);
-  const isTel = t => t === tel || (t.length >= 4 && lev(t, tel) <= 2);
-  for (let j = 0; j < N.toks.length - 1; j++) if (isTel(N.toks[j]) && N.toks[j + 1] === num) return j === 0 ? "start" : "late";
-  if (N.toks.some(isTel) || N.toks.includes(num)) return "partial";
+  const tw = cs.tel.toLowerCase().split(" "), num = String(cs.num), k = tw.length;
+  const eq = (t, w) => t === w || (t.length >= 4 && w.length >= 4 && lev(t, w) <= 2);
+  for (let j = 0; j + k < N.toks.length; j++) if (tw.every((w, i) => eq(N.toks[j + i], w)) && N.toks[j + k] === num) return j === 0 ? "start" : "late";
+  if (N.toks.some(t => tw.some(w => eq(t, w))) || N.toks.includes(num)) return "partial";
   return "none";
 }
 function grade(task, checks, text) {
@@ -1668,7 +1676,7 @@ function deck() {
 const PMODES = [
   { k: "cards", t: "แฟลชการ์ด" }, { k: "order", t: "เรียงคำ" }, { k: "match", t: "จับคู่" },
   { k: "spot", t: "หาจุดผิด" }, { k: "listen", t: "ฟังแล้วพิมพ์" },
-  { k: "ad", t: "ข้อมูลสนามสุ่ม" }, { k: "case", t: "วิเคราะห์สถานการณ์" }
+  { k: "ad", t: "ข้อมูลสนามสุ่ม" }, { k: "case", t: "วิเคราะห์สถานการณ์" }, { k: "cs", t: "Callsign" }
 ];
 const P = { mode: "cards", last: null, t: null };
 const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
@@ -1681,7 +1689,7 @@ function renderPModes() {
 }
 function nextPrac() {
   $("pFb").hidden = true; $("pFb").innerHTML = ""; $("pSrc").textContent = "";
-  ({ cards: pCards, order: pOrder, match: pMatch, spot: pSpot, listen: pListen, ad: pAd, case: pCase })[P.mode]();
+  ({ cards: pCards, order: pOrder, match: pMatch, spot: pSpot, listen: pListen, ad: pAd, case: pCase, cs: pCs })[P.mode]();
 }
 function pDone(pct, title, rows, src) {
   const box = $("pFb"); box.hidden = false; box.innerHTML = "";
@@ -1785,6 +1793,14 @@ function pCaseCode() {
     () => pMcq("เลือกวิธีทำ", `${csText(cs)} ไม่ตอบวิทยุ คุณสงสัยว่าวิทยุขัดข้อง ควรพูดอะไร`, `${csText(cs)} REPLY NOT RECEIVED, IF YOU READ SQUAWK IDENT`, [`${csText(cs)} SQUAWK 7600`, `${csText(cs)} SAY AGAIN ALL AFTER`], "ให้นักบินตอบด้วยการทำ IDENT ถ้ายังรับฟังได้", [`${D4444} 12.4.1.9 c) REPLY NOT RECEIVED`, `${D4444} 12.4.1.9 d) IF YOU READ [manoeuvre instructions or SQUAWK (code or IDENT)]`])
   ];
   pick(Q)();
+}
+function pCs() {
+  const o = pick(OPS), oth = OPS.filter(x => x !== o), n = rand(101, 989);
+  pick([
+    () => pMcq("Callsign", `${o.d} (${o.co}) ใช้ telephony ว่าอะไร`, o.tel, oth.map(x => x.tel), null, [OPS_SRC]),
+    () => pMcq("Callsign", `ได้ยิน "${o.tel} ${sayDigits(n).toUpperCase()}" คือสายการบินใด`, `${o.co} (${o.d})`, oth.map(x => `${x.co} (${x.d})`), null, [OPS_SRC]),
+    () => pMcq("Callsign", `flight plan ${o.d}${n} ต้องเรียกทางวิทยุว่าอะไร`, `${o.tel} ${n}`, [`${o.d} ${n}`, ...oth.slice(0, 1).map(x => `${x.tel} ${n}`)], "ใช้ telephony designator ตามด้วยเลขเที่ยวบิน", [OPS_SRC])
+  ])();
 }
 function pCase() { pick([pCaseRb, pCaseRb, pCaseEmg, pCaseCode])(); }
 
@@ -1913,6 +1929,7 @@ function pListen() {
 /* ---------- game layer: learning path, XP, streak, celebrations ---------- */
 const MASCOT = `<svg class="tower" viewBox="0 0 120 140" aria-hidden="true"><path class="t-base" d="M36 128h48l-5 9H41z"/><rect class="t-shaft" x="47" y="74" width="26" height="56" rx="7"/><rect class="t-win2" x="54" y="90" width="12" height="7" rx="3"/><rect class="t-win2" x="54" y="104" width="12" height="7" rx="3"/><path class="t-roof" d="M30 30h60a5 5 0 0 1 0 10H30a5 5 0 0 1 0-10z"/><path class="t-ant" d="M60 30V14"/><circle class="t-light" cx="60" cy="12" r="4.5"/><path class="t-cab" d="M22 40h76l-9 36H31z"/><path class="t-glass" d="M30 46h60l-6 22H36z"/><g class="t-eyes"><circle cx="49" cy="57" r="6.5"/><circle cx="71" cy="57" r="6.5"/><circle class="t-shine" cx="51" cy="54.5" r="2"/><circle class="t-shine" cx="73" cy="54.5" r="2"/></g><path class="t-smile" d="M54 71q6 4.5 12 0"/><path class="t-band" d="M19 56C19 14 101 14 101 56"/><rect class="t-cup" x="11" y="48" width="13" height="20" rx="6"/><rect class="t-cup" x="96" y="48" width="13" height="20" rx="6"/><path class="t-boom" d="M102 66c0 12-8 17-19 17"/><circle class="t-micb" cx="81" cy="83" r="4"/></svg>`;
 const GI = {
+  cs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l7-3 4-7 2 1-2 6 5-1 2 2-6 3-2 6-2-1 1-5-6 2z"/></svg>',
   ad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 6.4L20 12l-6.4 1.6L12 20l-1.6-6.4L4 12l6.4-2.6z"/></svg>',
   case: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
   climb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l6-6 4 4 6-8"/><path d="M14 8h6v6"/></svg>',
