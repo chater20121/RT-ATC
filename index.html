@@ -985,6 +985,10 @@ function norm(text) {
        .replace(/\bhdg\b/g, "heading").replace(/\bdescending\b/g, "descend").replace(/\bclimbing\b/g, "climb").replace(/\breducing\b/g, "reduce").replace(/\bincreasing\b/g, "increase")
        .replace(/\bmay day\b/g, "mayday").replace(/\bpan-pan\b/g, "pan pan").replace(/\bnumber one\b/g, "number 1");
   const raw = s.split(/\s+/).filter(Boolean);
+  /* mic often hears digits as look-alike words; fix only when both neighbours are numbers, e.g. "one to zero" */
+  const HOMO = { to: "two", for: "four", fore: "four", won: "one", ate: "eight", free: "three", nina: "nine", fiver: "five" };
+  const isNum = x => x !== undefined && (x in W || /^\d+$/.test(x));
+  for (let h = 1; h < raw.length - 1; h++) if (raw[h] in HOMO && isNum(raw[h - 1]) && isNum(raw[h + 1])) raw[h] = HOMO[raw[h]];
   const toks = [], nums = [];
   let i = 0;
   while (i < raw.length) {
@@ -1009,8 +1013,14 @@ function norm(text) {
       toks.push(String(val)); nums.push(val);
     } else { toks.push(t); i++; }
   }
+  for (let a = 0; a < toks.length; a++) {
+    let cat = "";
+    for (let b = a; b < toks.length && /^\d+$/.test(toks[b]) && b < a + 4; b++) { cat += toks[b]; if (b > a) { const v = parseInt(cat, 10); if (!nums.includes(v)) nums.push(v); } }
+  }
   const joined = " " + toks.join(" ") + " ";
-  return { toks, nums, has: p => joined.includes(" " + p + " ") };
+  const near = (t, w) => t === w || (t.length >= 4 && w.length >= 4 && lev(t, w) <= (w.length >= 7 ? 2 : 1));
+  const hasF = p => { if (joined.includes(" " + p + " ")) return true; const pw = p.split(" "); for (let j = 0; j + pw.length <= toks.length; j++) if (pw.every((w, q) => near(toks[j + q], w))) return true; return false; };
+  return { toks, nums, has: p => joined.includes(" " + p + " "), hasF };
 }
 function lev(a, b) {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
@@ -1021,8 +1031,10 @@ function lev(a, b) {
 }
 function callsignState(N, cs) {
   const tw = cs.tel.toLowerCase().split(" "), num = String(cs.num), k = tw.length;
-  const eq = (t, w) => t === w || (t.length >= 4 && w.length >= 4 && lev(t, w) <= 2);
-  for (let j = 0; j + k < N.toks.length; j++) if (tw.every((w, i) => eq(N.toks[j + i], w)) && N.toks[j + k] === num) return j === 0 ? "start" : "late";
+  const ALIAS = { thai: ["tie", "thigh", "tai", "ty", "thy", "tight", "time"] };
+  const eq = (t, w) => t === w || (ALIAS[w] || []).includes(t) || (t.length >= 4 && w.length >= 4 && lev(t, w) <= 2);
+  const numAt = j => { let cat = ""; for (let b = j; b < N.toks.length && /^\d+$/.test(N.toks[b]) && b < j + 3; b++) { cat += N.toks[b]; if (cat === num) return true; } return false; };
+  for (let j = 0; j + k < N.toks.length; j++) if (tw.every((w, i) => eq(N.toks[j + i], w)) && numAt(j + k)) return j === 0 ? "start" : "late";
   if (N.toks.some(t => tw.some(w => eq(t, w))) || N.toks.includes(num)) return "partial";
   return "none";
 }
@@ -1037,7 +1049,7 @@ function grade(task, checks, text) {
   const csNum = task.cs.num;
   for (const ch of checks) {
     let ok, note = "";
-    if (ch.any) ok = ch.any.some(p => N.has(p));
+    if (ch.any) ok = ch.any.some(p => N.hasF(p));
     else {
       ok = N.nums.includes(ch.num);
       if (!ok) { const other = N.nums.filter(n => n !== csNum); note = other.length ? `ได้ยินค่า ${other.join(", ")}` : "ไม่ได้บอกค่านี้"; }
@@ -1284,7 +1296,8 @@ async function drillSend() {
   const g = grade(t, t.checks(t.vals), text), model = t.atc(t.vals);
   D.last = { text, g, model, task: D.phase === "correct" ? `แก้ readback ผิด: ${t.thai} (นักบินทวนว่า ${t.rbText(D.rbVals)})` : t.thai };
   renderResult($("dResult"), { ...g, model }, t.src, drillCoach);
-  if (g.c === "none" || g.c === "partial") { logTo($("dLog"), "SYS", "นักบินไม่ตอบ เพราะไม่ได้ยิน callsign ของตัวเอง", "sys"); return; }
+  if (g.c === "none") { logTo($("dLog"), "SYS", "นักบินไม่ตอบ เพราะไม่ได้ยิน callsign ของตัวเอง", "sys"); return; }
+  if (g.c === "partial") logTo($("dLog"), "SYS", "callsign ไม่ครบหรือไมค์ถอดไม่ชัด นักบินยังตอบต่อ (หักคะแนนข้อ callsign)", "sys");
   if (g.critFail) { logTo($("dLog"), "PILOT", `Say again, ${csText(t.cs)}`, "pilot"); await speak(`Say again, ${csSay(t.cs)}`, t.voice); return; }
   const lbl = voiceLabel(t.voice);
   logTo($("dLog"), "PILOT", `${t.rbText(t.vals)}, ${csText(t.cs)}` + (lbl ? `  [${lbl}]` : ""), "pilot");
@@ -1337,7 +1350,8 @@ async function scenSend() {
   const s = SC.s; logTo($("sLog"), "ATC", text, "atc"); $("sTx").value = ""; $("sPartial").textContent = "";
   const g = grade(s, s.checks, text);
   renderResult($("sResult"), { ...g, model: s.model }, s.src, (b, c) => askCoach(b, c, { items: g.items, src: s.src, task: s.ask, model: s.model, text, pilot: s.pilot }));
-  if (!s.noCs && (g.c === "none" || g.c === "partial")) { logTo($("sLog"), "SYS", "นักบินไม่ตอบ เพราะไม่ได้ยิน callsign ของตัวเอง", "sys"); return; }
+  if (!s.noCs && g.c === "none") { logTo($("sLog"), "SYS", "นักบินไม่ตอบ เพราะไม่ได้ยิน callsign ของตัวเอง", "sys"); return; }
+  if (!s.noCs && g.c === "partial") logTo($("sLog"), "SYS", "callsign ไม่ครบหรือไมค์ถอดไม่ชัด นักบินยังตอบต่อ (หักคะแนนข้อ callsign)", "sys");
   if (g.critFail) { if (!s.noCs && s.reply) { logTo($("sLog"), "PILOT", `Say again, ${csText(s.cs)}`, "pilot"); await speak(`Say again, ${csSay(s.cs)}`, SC.voice); } return; }
   if (s.reply) { logTo($("sLog"), "PILOT", s.reply, "pilot"); await speak(s.replySay, SC.voice); }
   if (s.sysAfter) logTo($("sLog"), "SYS", s.sysAfter, "sys");
@@ -1602,7 +1616,7 @@ function micUI(live, label) { ["d", "s", "e"].forEach(p => { $(p + "Mic").classL
 function wireDictation(d) {
   dict = d; if (!d) return;
   $("sMic").hidden = false; $("eMic").hidden = false; setDrillPhase();
-  $("dHint").textContent = "กดไมค์หนึ่งครั้งแล้วพูด พูดจบกดอีกครั้ง ระบบจะส่งให้เอง";
+  $("dHint").textContent = "กดไมค์แล้วพูด พูดจบกดอีกครั้ง ตรวจข้อความ แก้คำที่ถอดผิดได้ แล้วกดส่ง";
   d.onPartial(({ text }) => { if (dictTarget) $(dictTarget + "Partial").textContent = text; });
   d.onFinal(({ text }) => { if (!dictTarget) return; const tx = $(dictTarget + "Tx"); tx.value = tx.value ? tx.value + text : text.trimStart(); $(dictTarget + "Partial").textContent = ""; });
   d.onState(({ state, reason }) => {
@@ -1611,7 +1625,8 @@ function wireDictation(d) {
     if (state === "idle") {
       if (reason === "not_granted" || reason === "unavailable") { dict = null; $("dMic").hidden = true; $("sMic").hidden = true; $("eMic").hidden = true; $("dHint").textContent = "ใช้ไมค์ไม่ได้ในเครื่องนี้ พิมพ์แทนได้"; }
       const tgt = dictTarget;
-      if (autoSend && tgt && $(tgt + "Tx").value.trim()) { autoSend = false; tgt === "d" ? drillSend() : tgt === "e" ? engSend() : scenSend(); }
+      if (autoSend && tgt === "e" && $("eTx").value.trim()) { autoSend = false; engSend(); }
+      else if (autoSend && tgt && $(tgt + "Tx").value.trim()) { const tx = $(tgt + "Tx"); $(tgt + "Partial").textContent = "ตรวจข้อความที่ไมค์ถอด แก้คำที่ผิดได้ แล้วกดส่ง"; tx.focus(); tx.setSelectionRange(tx.value.length, tx.value.length); }
       autoSend = false;
     }
   });
