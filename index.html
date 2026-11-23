@@ -494,6 +494,9 @@ details{border:2px solid var(--line)}
 .bigplay:active{transform:translateY(7px);box-shadow:none}
 .bigplay.on{animation:pulse .9s ease-in-out infinite}
 .pfb .pill{margin-top:4px}
+.pq{font-size:17px;font-weight:600;margin:12px 0 10px;text-wrap:balance}
+.opt.sel{border-color:var(--pri,#5b5bd6);box-shadow:inset 0 0 0 2px var(--pri,#5b5bd6)}
+.opt.plain{opacity:.75}
 </style>
 
 <svg class="curves" viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true">
@@ -1664,7 +1667,8 @@ function deck() {
 }
 const PMODES = [
   { k: "cards", t: "แฟลชการ์ด" }, { k: "order", t: "เรียงคำ" }, { k: "match", t: "จับคู่" },
-  { k: "spot", t: "หาจุดผิด" }, { k: "listen", t: "ฟังแล้วพิมพ์" }
+  { k: "spot", t: "หาจุดผิด" }, { k: "listen", t: "ฟังแล้วพิมพ์" },
+  { k: "ad", t: "ข้อมูลสนามสุ่ม" }, { k: "case", t: "วิเคราะห์สถานการณ์" }
 ];
 const P = { mode: "cards", last: null, t: null };
 const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
@@ -1677,7 +1681,7 @@ function renderPModes() {
 }
 function nextPrac() {
   $("pFb").hidden = true; $("pFb").innerHTML = ""; $("pSrc").textContent = "";
-  ({ cards: pCards, order: pOrder, match: pMatch, spot: pSpot, listen: pListen })[P.mode]();
+  ({ cards: pCards, order: pOrder, match: pMatch, spot: pSpot, listen: pListen, ad: pAd, case: pCase })[P.mode]();
 }
 function pDone(pct, title, rows, src) {
   const box = $("pFb"); box.hidden = false; box.innerHTML = "";
@@ -1690,6 +1694,99 @@ function pDone(pct, title, rows, src) {
   recordStat(pct);
   setTimeout(() => box.scrollIntoView({ behavior: calm() ? "auto" : "smooth", block: "nearest" }), 60);
 }
+
+
+/* ---------- batch 2 practice: random aerodrome data + situation analysis ----------
+   Aerodrome facts come only from AERODROMES (AIP Thailand AD 2.18 / AD 2.24, AIRAC in AIP const).
+   Situation rules: Doc 4444 4.5.7.5.1 (readback), Annex 10 Vol II 5.3.1.1 (distress/urgency),
+   Doc 4444 12.4.1.9 + Doc 9432 9.5.5 / 9.2.1.2 (codes 7600 / 7700). Callsigns and values are fictional. */
+const rwysOf = ad => [...new Set(ad.apch.map(a => a[1]))].sort().join("/");
+const apLabel = a => `${a[0]} RWY ${a[1]}`;
+function pMcq(kind, q, right, wrongs, why, src, extra) {
+  const box = $("pBody"); box.innerHTML = "";
+  box.append(el("div", "eyebrow", kind));
+  if (extra) box.append(extra);
+  box.append(el("p", "pq", q));
+  const opts = el("div", "opts"); box.append(opts);
+  shuffle([right, ...wrongs]).forEach(t => {
+    const b = el("button", "opt", t); b.style.fontFamily = "var(--body)";
+    b.onclick = () => {
+      [...opts.children].forEach(c => { c.disabled = true; if (c.textContent === right) c.classList.add("right"); else if (c === b) c.classList.add("wrong"); });
+      const ok = t === right;
+      pDone(ok ? 100 : 0, ok ? "ถูกต้อง!" : "ยังไม่ถูก", [["คำตอบ", right], ...(why ? [["เพราะ", why]] : [])], src);
+    };
+    opts.append(b);
+  });
+}
+function others(ad, f) { return shuffle(AERODROMES.filter(a => a !== ad).map(f)).filter((v, i, s) => s.indexOf(v) === i && v !== f(ad)).slice(0, 3); }
+function pAd() {
+  const ad = pick(AERODROMES), s218 = `${AIP} ${ad.p218} AD 2.18`, s224 = `${AIP} ${ad.p224} AD 2.24`;
+  const Q = [
+    () => pMcq("ICAO location indicator", `${ad.icao} คือสนามบินใด`, ad.city, others(ad, a => a.city), null, [s218]),
+    () => pMcq("ชื่อเรียกหน่วย", `นักบินที่จะเข้า ${ad.icao} ต้องเรียก approach ว่าอะไร`, ad.app, others(ad, a => a.app), null, [s218]),
+    () => pMcq("ความถี่ APP", `ความถี่ ${ad.app} (${ad.icao}) คือเท่าไร`, ad.appFreq, others(ad, a => a.appFreq), "ดูความถี่หลักใน AD 2.18 ของสนามนั้น", [s218]),
+    () => pMcq("ความถี่ TWR", `ความถี่ ${ad.twr} (${ad.icao}) คือเท่าไร`, ad.twrFreq, others(ad, a => a.twrFreq), null, [s218]),
+    () => pMcq("รันเวย์", `${ad.icao} ${ad.city} มีรันเวย์อะไร`, rwysOf(ad), others(ad, rwysOf), null, [s224]),
+    () => { const pool = AERODROMES.filter(a => a !== ad).flatMap(a => a.apch.map(apLabel)), mine = ad.apch.map(apLabel);
+      const wr = shuffle([...new Set(pool)].filter(x => !mine.includes(x))).slice(0, 3);
+      pMcq("Instrument approach", `ข้อใดเป็น instrument approach ที่มีประกาศของ ${ad.icao}`, pick(mine), wr, `${ad.icao} มี ${mine.join(", ")}`, [s224]); },
+    () => { const f = ad.appFreq, w = AERODROMES.filter(a => a !== ad);
+      pMcq("ความถี่ → หน่วย", `ได้ยินบนความถี่ ${f} น่าจะเป็นหน่วยใด`, ad.app, w.map(a => a.app).slice(0, 3), null, [s218]); }
+  ];
+  pick(Q)();
+}
+const RB_POOL = [
+  { need: true, mk: () => { const fl = pickFL(130, 250); return [`descend to flight level ${fl}`, `ระดับ (FL${fl})`]; } },
+  { need: true, mk: () => { const h = pad3(rand(1, 36) * 10); return [`turn left heading ${h}`, `heading ${h}`]; } },
+  { need: true, mk: () => { const s = rand(18, 25) * 10; return [`reduce speed ${s} knots`, `ความเร็ว ${s} kt`]; } },
+  { need: true, mk: () => { const q = rand(1003, 1015); return [`QNH ${q}`, `QNH ${q}`]; } },
+  { need: true, mk: () => { const c = sqCode(); return [`squawk ${c}`, `squawk ${c}`]; } },
+  { need: false, mk: () => { const o = rand(1, 12), d = rand(5, 15); return [`traffic ${o} o'clock ${d} miles opposite direction`, "traffic information"]; } },
+  { need: false, mk: () => { const w = pad3(rand(1, 36) * 10), k = rand(3, 15); return [`surface wind ${w} degrees ${k} knots`, "surface wind (ข้อมูลลม)"]; } }
+];
+function pCaseRb() {
+  const cs = newCs(), parts = shuffle(RB_POOL).slice(0, 4).map(p => ({ need: p.need, v: p.mk() }));
+  if (!parts.some(p => p.need)) parts[0] = { need: true, v: RB_POOL[0].mk() };
+  const box = $("pBody"); box.innerHTML = "";
+  box.append(el("div", "eyebrow", "วิเคราะห์ readback"));
+  const log = el("div", "log"); box.append(log);
+  logTo(log, "ATC", `${csText(cs)}, ${parts.map(p => p.v[0]).join(", ")}`, "atc");
+  box.append(el("p", "pq", "เลือกทุกข้อที่นักบินต้อง readback"));
+  const opts = el("div", "opts"); box.append(opts);
+  const pickd = new Set();
+  parts.forEach((p, i) => { const b = el("button", "opt", p.v[1]); b.style.fontFamily = "var(--body)"; b.setAttribute("aria-pressed", "false");
+    b.onclick = () => { if (pickd.has(i)) pickd.delete(i); else pickd.add(i); b.setAttribute("aria-pressed", pickd.has(i)); b.classList.toggle("sel", pickd.has(i)); };
+    opts.append(b); });
+  const chk = el("button", "pill", "ตรวจ"); box.append(chk);
+  chk.onclick = () => {
+    chk.hidden = true; let good = 0;
+    [...opts.children].forEach((b, i) => { b.disabled = true; const n = parts[i].need, s = pickd.has(i); if (n === s) good++; b.classList.add(n ? "right" : (s ? "wrong" : "plain")); });
+    const pct = Math.round(good / parts.length * 100);
+    pDone(pct, pct === 100 ? "แยกได้ครบ!" : `ถูก ${good} จาก ${parts.length}`,
+      [["ต้อง readback", parts.filter(p => p.need).map(p => p.v[1]).join(", ") || "-"], ["ไม่ต้อง readback (รับทราบพอ)", parts.filter(p => !p.need).map(p => p.v[1]).join(", ") || "-"]],
+      [RB_SRC, `${D4444} 4.5.7.5.1 ข้อมูลอย่าง traffic information และลมไม่อยู่ในรายการที่ต้อง readback`]);
+  };
+}
+const EMG = [
+  ["ไฟไหม้ในห้องโดยสาร ดับไม่ได้", "MAYDAY"], ["เครื่องยนต์ดับทั้งสองเครื่อง", "MAYDAY"], ["รักษาระดับไม่ได้ และบินผ่านภูเขา", "MAYDAY"],
+  ["ผู้โดยสารป่วย ต้องการลงก่อน แต่เครื่องบินปกติ", "PAN PAN"], ["นักบินต้องการกลับไปลงเพราะไฟเตือนระบบหนึ่งติด ยังบินได้ปกติ", "PAN PAN"], ["นักบินเห็นเรืออีกลำกำลังจม แจ้งเพื่อช่วยคนอื่น", "PAN PAN"]
+];
+function pCaseEmg() {
+  const [sit, ans] = pick(EMG);
+  pMcq("แยก distress / urgency", `สถานการณ์: ${sit} ตามนิยาม ICAO ข้อนี้ควรเป็นข้อความแบบใด`, ans, [ans === "MAYDAY" ? "PAN PAN" : "MAYDAY", "ไม่ต้องประกาศ แค่แจ้งข้อมูลปกติ"],
+    ans === "MAYDAY" ? "distress คือถูกคุกคามด้วยอันตรายร้ายแรงหรือใกล้ตัว และต้องการความช่วยเหลือทันที" : "urgency คือเรื่องความปลอดภัยของอากาศยาน คนบนเครื่อง หรือคนที่มองเห็น แต่ยังไม่ต้องการความช่วยเหลือทันที (นักบินเป็นคนตัดสินใจจริง)",
+    [`${A10} 5.3.1.1 นิยาม distress และ urgency`]);
+}
+function pCaseCode() {
+  const cs = newCs();
+  const Q = [
+    () => pMcq("วิเคราะห์ code", `เป้า ${csText(cs)} เปลี่ยน squawk เป็น 7600 และไม่ตอบวิทยุ หมายความว่าอะไร`, "นักบินวิทยุขัดข้อง (radio communication failure)", ["ฉุกเฉินทั่วไป (emergency)", "ขอเปลี่ยนความถี่"], null, [`${D9432} 9.5.5 นักบินที่วิทยุขัดข้องตั้ง code 7600`]),
+    () => pMcq("วิเคราะห์ code", `เป้า ${csText(cs)} เปลี่ยน squawk เป็น 7700 หมายความว่าอะไร`, "อากาศยานอยู่ในภาวะฉุกเฉิน", ["วิทยุขัดข้อง", "บิน VFR ปกติ"], null, [`${D9432} 9.2.1.2 code ฉุกเฉิน 7700`]),
+    () => pMcq("เลือกวิธีทำ", `${csText(cs)} ไม่ตอบวิทยุ คุณสงสัยว่าวิทยุขัดข้อง ควรพูดอะไร`, `${csText(cs)} REPLY NOT RECEIVED, IF YOU READ SQUAWK IDENT`, [`${csText(cs)} SQUAWK 7600`, `${csText(cs)} SAY AGAIN ALL AFTER`], "ให้นักบินตอบด้วยการทำ IDENT ถ้ายังรับฟังได้", [`${D4444} 12.4.1.9 c) REPLY NOT RECEIVED`, `${D4444} 12.4.1.9 d) IF YOU READ [manoeuvre instructions or SQUAWK (code or IDENT)]`])
+  ];
+  pick(Q)();
+}
+function pCase() { pick([pCaseRb, pCaseRb, pCaseEmg, pCaseCode])(); }
 
 /* flashcards with simple spaced repetition: a miss sends the card back to box 0 */
 function pCards() {
@@ -1816,6 +1913,8 @@ function pListen() {
 /* ---------- game layer: learning path, XP, streak, celebrations ---------- */
 const MASCOT = `<svg class="tower" viewBox="0 0 120 140" aria-hidden="true"><path class="t-base" d="M36 128h48l-5 9H41z"/><rect class="t-shaft" x="47" y="74" width="26" height="56" rx="7"/><rect class="t-win2" x="54" y="90" width="12" height="7" rx="3"/><rect class="t-win2" x="54" y="104" width="12" height="7" rx="3"/><path class="t-roof" d="M30 30h60a5 5 0 0 1 0 10H30a5 5 0 0 1 0-10z"/><path class="t-ant" d="M60 30V14"/><circle class="t-light" cx="60" cy="12" r="4.5"/><path class="t-cab" d="M22 40h76l-9 36H31z"/><path class="t-glass" d="M30 46h60l-6 22H36z"/><g class="t-eyes"><circle cx="49" cy="57" r="6.5"/><circle cx="71" cy="57" r="6.5"/><circle class="t-shine" cx="51" cy="54.5" r="2"/><circle class="t-shine" cx="73" cy="54.5" r="2"/></g><path class="t-smile" d="M54 71q6 4.5 12 0"/><path class="t-band" d="M19 56C19 14 101 14 101 56"/><rect class="t-cup" x="11" y="48" width="13" height="20" rx="6"/><rect class="t-cup" x="96" y="48" width="13" height="20" rx="6"/><path class="t-boom" d="M102 66c0 12-8 17-19 17"/><circle class="t-micb" cx="81" cy="83" r="4"/></svg>`;
 const GI = {
+  ad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 6.4L20 12l-6.4 1.6L12 20l-1.6-6.4L4 12l6.4-2.6z"/></svg>',
+  case: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
   climb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l6-6 4 4 6-8"/><path d="M14 8h6v6"/></svg>',
   qnh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 13l4-4"/><path d="M9 3h6"/></svg>',
   heading: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6l3 8-3-2-3 2z" fill="currentColor"/></svg>',
@@ -1842,7 +1941,7 @@ function unitsList() {
   const u = [
     { c: "c-pri", n: 1, t: "ซ้อมสั่งการ ทีละหัวข้อ", p: "ให้คำสั่งนักบิน แล้วฟัง readback",
       nodes: TOPICS.filter(t => t.k !== "fav").map(t => ({ key: t.k, t: t.t, icon: TOPIC_ICON[t.k] || "star", go: () => goTopic(t.k) })) },
-    { c: "c-mint", n: 2, t: "ทวนความเข้าใจ", p: "แฟลชการ์ด เรียงคำ จับคู่ หาจุดผิด ฟังแล้วพิมพ์",
+    { c: "c-mint", n: 2, t: "ทวนความเข้าใจ", p: "แฟลชการ์ด เรียงคำ จับคู่ หาจุดผิด ฟัง ข้อมูลสนาม วิเคราะห์",
       nodes: PMODES.map(m => ({ key: "p-" + m.k, t: m.t, icon: m.k, go: () => { P.mode = m.k; renderPModes(); nextPrac(); location.hash = "#practice"; } })) },
     { c: "c-amb", n: 3, t: "อ่านตัวเลขแบบ ICAO", p: "FL, QNH, squawk, ความถี่",
       nodes: [{ key: "num", t: "เลือกคำอ่านที่ถูก", icon: "hash", go: () => { location.hash = "#numbers"; } }] },
@@ -1996,4 +2095,5 @@ if (C && C.use) {
 window.__rt = { norm, grade, TEMPLATES, SCENARIOS, NQ, sayFL, sayQNH, saySq, sayAlt, sayFreq, AERODROMES };
 })();
 </script>
-</body></html>
+</body>
+</html>
