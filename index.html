@@ -512,6 +512,52 @@ details{border:2px solid var(--line)}
 .pq{font-size:17px;font-weight:600;margin:12px 0 10px;text-wrap:balance}
 .opt.sel{border-color:var(--pri,#5b5bd6);box-shadow:inset 0 0 0 2px var(--pri,#5b5bd6)}
 .opt.plain{opacity:.75}
+/* ---------- motion v2: springy, crisp feedback (all off under reduced motion) ---------- */
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+.opt{position:relative}
+.opt.right:disabled,.opt.wrong:disabled{opacity:1;color:var(--ink)}
+@media (prefers-reduced-motion: no-preference){
+  :root{--spring:cubic-bezier(.34,1.56,.64,1);--snap:cubic-bezier(.2,.9,.3,1)}
+  .pill,.sm,.chip,.opt,.ctl,.iconbtn,.node,.bubble .next,.mitem,.tile{transition:transform .22s var(--spring),box-shadow .12s ease,background-color .2s,border-color .2s,opacity .25s}
+  .pill:active:not(:disabled),.sm:active:not(:disabled),.chip:active,.opt:active:not(:disabled),.ctl:active:not(:disabled),.iconbtn:active,.mitem:active,.tile:active{transition-duration:.06s;scale:.97}
+  @media (hover:hover){.pill:hover:not(:disabled),.sm:hover:not(:disabled),.opt:hover:not(:disabled),.ctl:hover:not(:disabled),.chip:hover{translate:0 -2px}}
+  .screen:not([hidden]){animation:viewIn .42s var(--snap)}
+  .opts>.opt{animation:optIn .46s var(--spring) backwards}
+  .opts>.opt:nth-child(2){animation-delay:.05s}.opts>.opt:nth-child(3){animation-delay:.1s}.opts>.opt:nth-child(4){animation-delay:.15s}.opts>.opt:nth-child(5){animation-delay:.2s}.opts>.opt:nth-child(n+6){animation-delay:.25s}
+  .opts>.opt.right{animation:boing .62s var(--spring) both;animation-delay:0s}
+  .opts>.opt.wrong{animation:shake .42s var(--snap) both;animation-delay:0s}
+  .opt:disabled:not(.right):not(.wrong){opacity:.4;scale:.98}
+  .opt.right::after,.opt.wrong::after{position:absolute;right:-8px;top:-10px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 16px/1 var(--body);color:#fff;animation:badge .5s var(--spring) .12s both}
+  .opt.right::after{content:"✓";background:var(--mint);box-shadow:0 3px 0 var(--mint-sh)}
+  .opt.wrong::after{content:"✕";background:var(--cor);box-shadow:0 3px 0 var(--cor-sh)}
+  .result,.pfb{animation:panelIn .55s var(--spring) both}
+  .result>*,.pfb>*{animation:fadeUp .4s var(--snap) both}
+  .result>:nth-child(2),.pfb>:nth-child(2){animation-delay:.06s}.result>:nth-child(3),.pfb>:nth-child(3){animation-delay:.12s}.result>:nth-child(4),.pfb>:nth-child(4){animation-delay:.18s}.result>:nth-child(n+5),.pfb>:nth-child(n+5){animation-delay:.24s}
+  .result.good .fb .tower{animation:hop .8s var(--spring) .1s both}
+  .result.mid .fb .tower{animation:tilt .7s var(--snap) .1s both}
+  .result.bad .fb .tower{animation:droop .7s var(--snap) .1s both}
+  .fb b{display:inline-block;animation:titlePop .5s var(--spring) .15s both}
+  .score .num{display:inline-block;animation:titlePop .55s var(--spring) .05s both}
+  .whybox{animation:fadeUp .45s var(--snap) .2s both}
+  .tabs a svg{transition:transform .25s var(--spring)}
+  .tabs a[aria-current="page"] svg{animation:tabHop .55s var(--spring)}
+  .qztrack i,.prog i{overflow:hidden;position:relative;transition:width .6s var(--spring)}
+  .qztrack i::after,.prog i::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-100%);animation:shine 2.4s ease-in-out infinite}
+  .spark{position:fixed;z-index:21;width:8px;height:8px;border-radius:50%;pointer-events:none;animation:spark .6s var(--snap) forwards}
+  @keyframes viewIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes optIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
+  @keyframes boing{0%{transform:scale(1)}30%{transform:scale(1.06,.94)}55%{transform:scale(.97,1.04)}75%{transform:scale(1.02)}100%{transform:scale(1)}}
+  @keyframes badge{from{transform:scale(0) rotate(-40deg)}to{transform:none}}
+  @keyframes panelIn{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes hop{0%{transform:translateY(0)}30%{transform:translateY(-16px) rotate(-6deg)}55%{transform:translateY(0) scale(1.08,.92)}75%{transform:translateY(-5px) rotate(3deg)}100%{transform:none}}
+  @keyframes tilt{0%,100%{transform:none}30%{transform:rotate(-8deg)}60%{transform:rotate(6deg)}}
+  @keyframes droop{0%{transform:none}40%{transform:translateY(4px) rotate(-7deg) scale(.96)}100%{transform:none}}
+  @keyframes titlePop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+  @keyframes tabHop{0%{transform:none}35%{transform:translateY(-6px) scale(1.15)}70%{transform:translateY(1px) scale(.96)}100%{transform:none}}
+  @keyframes shine{0%,55%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+  @keyframes spark{from{transform:translate(-50%,-50%) scale(1);opacity:1}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.2);opacity:0}}
+}
 </style>
 
 <svg class="curves" viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true">
@@ -2572,6 +2618,37 @@ renderResult = function (box, r, src, onCoach) {
   box.style.animation = "none"; void box.offsetWidth; box.style.animation = "";
   setTimeout(() => box.scrollIntoView({ behavior: calm() ? "auto" : "smooth", block: "nearest" }), 60);
 };
+
+/* ---------- motion v2: sparks on a right answer, count-up score, light haptics ---------- */
+(function () {
+  const buzz = p => { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} };
+  function sparks(node) {
+    if (calm()) return;
+    const r = node.getBoundingClientRect(), cs = getComputedStyle(document.documentElement);
+    const cols = ["--mint", "--amb", "--pri", "--vio"].map(c => cs.getPropertyValue(c).trim());
+    for (let i = 0; i < 12; i++) {
+      const s = el("i", "spark"), a = (i / 12) * Math.PI * 2, d = 40 + Math.random() * 34;
+      s.style.left = (r.left + r.width / 2) + "px"; s.style.top = (r.top + r.height / 2) + "px"; s.style.background = cols[i % cols.length];
+      s.style.setProperty("--dx", Math.cos(a) * (d + r.width / 3) + "px"); s.style.setProperty("--dy", Math.sin(a) * d + "px");
+      document.body.append(s); setTimeout(() => s.remove(), 700);
+    }
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest && e.target.closest(".opt, .tile, .mitem"); if (!b) return;
+    setTimeout(() => {
+      if (b.classList.contains("right") || b.classList.contains("ok")) { sparks(b); buzz(12); }
+      else if (b.classList.contains("wrong") || b.classList.contains("no")) buzz([25, 40, 25]);
+    }, 0);
+  });
+  const _rr = renderResult;
+  renderResult = function (box, r, src, onCoach) {
+    _rr(box, r, src, onCoach);
+    const n = box.querySelector(".score .num"); if (!n || calm() || !(r.pct > 0)) return;
+    const end = r.pct, t0 = performance.now(), dur = 650;
+    const step = t => { const k = Math.min(1, (t - t0) / dur), v = Math.round(end * (1 - Math.pow(1 - k, 3))); n.textContent = v + "%"; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  };
+})();
 
 /* ---------- routing ---------- */
 const VIEWS = { home: "v-home", drill: "v-drill", scenario: "v-scen", english: "v-eng", practice: "v-prac", numbers: "v-num" };
