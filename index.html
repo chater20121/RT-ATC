@@ -558,6 +558,74 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-r
   @keyframes shine{0%,55%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
   @keyframes spark{from{transform:translate(-50%,-50%) scale(1);opacity:1}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.2);opacity:0}}
 }
+/* ---------- lesson mode: full-screen lesson with a check button and a sliding result sheet ---------- */
+.lesson{position:fixed;inset:0;z-index:40;background:var(--surface);display:flex;flex-direction:column}
+.lesson[hidden]{display:none}
+body.lesson-on{overflow:hidden}
+body.lesson-on .confetti{z-index:45}
+.ltop{display:flex;align-items:center;gap:12px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;max-width:640px;width:100%;margin:0 auto}
+.lx{width:40px;height:40px;flex:none;border-radius:12px;display:grid;place-items:center;color:var(--muted);background:none;border:0;padding:0}
+.lx svg{width:26px;height:26px}
+.lbar{flex:1;height:16px;border-radius:999px;background:var(--line);overflow:hidden}
+.lbar i{display:block;height:100%;width:0;min-width:16px;background:var(--mint);border-radius:999px;position:relative;transition:width .5s cubic-bezier(.34,1.56,.64,1)}
+.lbar i::after{content:"";position:absolute;left:8px;right:8px;top:3px;height:4px;border-radius:2px;background:rgba(255,255,255,.4)}
+.lcombo{min-width:48px;font-family:var(--display);font-weight:600;color:var(--amb-sh);font-size:15px;text-align:right;white-space:nowrap}
+.lbody{flex:1;overflow-y:auto;padding:10px 16px 24px;max-width:640px;width:100%;margin:0 auto}
+.lcard{display:grid;gap:12px}
+.lq{font-family:var(--display);font-size:21px;line-height:1.45;font-weight:500;margin:2px 0 6px}
+.lretry{justify-self:start;background:var(--amb-soft);color:var(--amb-sh);border-radius:999px;padding:2px 12px;font-family:var(--display);font-size:14px}
+.lcard .opt{font-family:var(--body);font-size:16px}
+.lskip{justify-self:start;background:none;border:0;color:var(--pri);font-family:var(--display);font-size:15px;padding:6px 2px;text-decoration:underline;text-underline-offset:3px}
+.lfoot{border-top:2px solid var(--line);padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));background:var(--surface);transition:background-color .25s,border-color .25s}
+.lfoot>*{max-width:608px;margin-left:auto;margin-right:auto}
+.lfoot.ok{background:var(--mint-soft);border-color:transparent}
+.lfoot.bad{background:var(--cor-soft);border-color:transparent}
+.lsheet{display:grid;gap:6px;margin-bottom:12px;max-height:46vh;overflow-y:auto}
+.lsheet[hidden]{display:none}
+.lhead{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:22px;font-weight:600}
+.lfoot.ok .lhead{color:var(--ok)} .lfoot.bad .lhead{color:var(--bad)}
+.lico{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 18px/1 var(--body);background:var(--mint)}
+.lfoot.bad .lico{background:var(--cor)}
+.lans{font-family:var(--body);font-size:16px;color:var(--ink);font-weight:500}
+.lsrc{font-size:12.5px;color:var(--muted);line-height:1.45}
+.lbtn{width:100%;display:block;min-height:54px;border-radius:16px;border:0;background:var(--pri);color:var(--on-color);box-shadow:0 5px 0 var(--pri-sh);font-family:var(--display);font-size:18px;font-weight:600;letter-spacing:.04em;margin-bottom:5px;transition:transform .08s,box-shadow .08s,background-color .2s}
+.lbtn:disabled{background:var(--line);color:var(--muted);box-shadow:0 5px 0 var(--line);opacity:1}
+.lbtn.ok{background:var(--mint);box-shadow:0 5px 0 var(--mint-sh)}
+.lbtn.bad{background:var(--cor);box-shadow:0 5px 0 var(--cor-sh)}
+.lbtn.ghost{background:var(--surface);color:var(--pri);border:2px solid var(--line);box-shadow:0 4px 0 var(--line);min-height:50px}
+.lbtn:active:not(:disabled){transform:translateY(5px);box-shadow:0 0 0 transparent}
+.lfoot .lbtn+.lbtn{margin-top:10px}
+.lend{display:grid;gap:14px;justify-items:center;text-align:center;padding-top:20px}
+.lend .tower{width:120px;height:auto}
+.lend h2{font-family:var(--display);font-size:28px;line-height:1.3;margin:0}
+.lend p{margin:0;color:var(--muted)}
+.lstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.lstat{border:2px solid var(--c);border-radius:16px;overflow:hidden;background:var(--surface)}
+.lstat b{display:block;background:var(--c);color:#fff;font-family:var(--display);font-weight:500;font-size:13px;padding:4px}
+.lstat span{display:block;padding:10px 4px;font-family:var(--display);font-size:22px;font-weight:600;color:var(--c)}
+.lmiss{width:100%;text-align:left;background:var(--surface-2);border-radius:16px;padding:12px 14px}
+.lmiss ul{margin:6px 0 0;padding-left:20px}
+.lquit{position:absolute;inset:0;z-index:2;background:rgba(10,14,24,.45);display:flex;align-items:flex-end}
+.lquit[hidden]{display:none}
+.lquit>div{background:var(--surface);width:100%;border-radius:22px 22px 0 0;padding:22px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:10px;text-align:center}
+.lquit>div>*{max-width:608px;width:100%;margin-left:auto;margin-right:auto}
+.lquit h3{font-family:var(--display);font-size:20px;margin:0}
+.lgo{width:100%;margin:4px 0 2px}
+@media (prefers-reduced-motion: no-preference){
+  .lesson:not([hidden]){animation:lUp .38s var(--snap)}
+  .lcard{animation:lIn .38s var(--snap) both}
+  .lsheet:not([hidden]){animation:sheetUp .42s var(--spring) both}
+  .lico{animation:badge .5s var(--spring) .08s both}
+  .lcombo.pop{animation:titlePop .45s var(--spring)}
+  .lend .tower{animation:hop .9s var(--spring) .15s both}
+  .lend h2{animation:titlePop .5s var(--spring) .1s both}
+  .lstat{animation:fadeUp .45s var(--spring) both}
+  .lstat:nth-child(2){animation-delay:.12s}.lstat:nth-child(3){animation-delay:.24s}
+  .lquit>div{animation:sheetUp .35s var(--spring)}
+  @keyframes lUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes lIn{from{transform:translateX(36px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes sheetUp{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+}
 </style>
 
 <svg class="curves" viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true">
@@ -2713,6 +2781,167 @@ if (C && C.use) {
   C.use("sample").then(s => { sampleFn = s; }).catch(() => {});
 }
 window.__rt = { norm, grade, TEMPLATES, SCENARIOS, NQ, KNOW, MCQ_GEN, TYPE_GEN, QZ, sayFL, sayQNH, saySq, sayAlt, sayFreq, AERODROMES };
+/* ---------- lesson mode: 10 questions from the quiz banks, pick then check, wrong ones come back once at the end ---------- */
+const LSN = { on: false, n: 10 };
+const L_ICON = { all: "star", word: "quiz", num: "hash", phr: "climb", ad: "ad", emg: "alert", sit: "case", doc: "doc" };
+function lessonGen(cat) {
+  const save = QZ.cat; QZ.cat = cat;
+  try {
+    const canType = cat === "all" || TYPE_GEN.some(g => g.cat === cat);
+    const typed = canType && Math.random() < 0.3;
+    return qzPick(typed ? TYPE_GEN : MCQ_GEN) || (canType ? qzPick(TYPE_GEN) : null);
+  } finally { QZ.cat = save; }
+}
+function lessonDom() {
+  if (LSN.root) return;
+  const r = el("div", "lesson"); r.id = "lesson"; r.hidden = true;
+  r.setAttribute("role", "dialog"); r.setAttribute("aria-modal", "true"); r.setAttribute("aria-label", "บทเรียน");
+  r.innerHTML = `<div class="ltop"><button class="lx" aria-label="ออกจากบทเรียน"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="lbar" role="progressbar" aria-label="ความคืบหน้าบทเรียน" aria-valuemin="0" aria-valuemax="100"><i></i></div><span class="lcombo" aria-live="polite"></span></div>
+    <div class="lbody"></div>
+    <div class="lfoot"><div class="lsheet" aria-live="polite" hidden></div><button class="lbtn">ตรวจ</button></div>
+    <div class="lquit" hidden><div><h3>ออกจากบทเรียนตอนนี้เลยไหม</h3><p class="hint">ข้อที่ทำไปแล้วยังนับ XP แต่บทนี้จะไม่นับว่าจบ</p>
+      <button class="lbtn" data-q="stay">ทำต่อ</button><button class="lbtn ghost" data-q="quit">ออก</button></div></div>`;
+  document.body.append(r);
+  LSN.root = r; LSN.body = r.querySelector(".lbody"); LSN.foot = r.querySelector(".lfoot"); LSN.sheet = r.querySelector(".lsheet");
+  LSN.btn = r.querySelector(".lfoot>.lbtn"); LSN.bar = r.querySelector(".lbar i"); LSN.combo = r.querySelector(".lcombo"); LSN.quit = r.querySelector(".lquit");
+  r.querySelector(".lx").onclick = () => { if (LSN.phase === "end" || (LSN.i === 0 && LSN.phase === "ask")) lessonClose(); else { LSN.quit.hidden = false; LSN.quit.querySelector("[data-q=stay]").focus(); } };
+  LSN.quit.querySelector("[data-q=stay]").onclick = () => { LSN.quit.hidden = true; };
+  LSN.quit.querySelector("[data-q=quit]").onclick = () => { LSN.quit.hidden = true; lessonClose(); };
+  LSN.btn.onclick = () => {
+    if (LSN.phase === "ask") { const q = LSN.queue[LSN.i].q; if (q.check) { const v = LSN.inp.value.trim(); if (v) lessonCheck(v); } else if (LSN.pick != null) lessonCheck(); }
+    else if (LSN.phase === "fb") { LSN.i++; if (LSN.i >= LSN.queue.length) lessonEnd(); else lessonAsk(); }
+    else if (LSN.phase === "end") lessonStart(LSN.cat);
+  };
+  document.addEventListener("keydown", e => {
+    if (!LSN.on || e.key !== "Enter" || e.shiftKey || !LSN.quit.hidden) return;
+    if (e.target && e.target.tagName === "BUTTON") return;
+    if (LSN.phase === "fb" || (LSN.phase === "ask" && !LSN.btn.disabled)) { e.preventDefault(); LSN.btn.click(); }
+  });
+}
+function lessonStart(cat) {
+  lessonDom();
+  const seen = new Set(), queue = [];
+  for (let g = 0; g < 60 && queue.length < LSN.n; g++) { const q = lessonGen(cat); if (q && !seen.has(q.q)) { seen.add(q.q); queue.push({ q, retry: false }); } }
+  Object.assign(LSN, { on: true, cat, queue, i: 0, total: queue.length, done: 0, firstOk: 0, xp: 0, run: 0, best: 0, miss: [], t0: Date.now() });
+  LSN.root.hidden = false; document.body.classList.add("lesson-on");
+  LSN.btn.className = "lbtn"; LSN.bar.style.width = "0";
+  const g = LSN.root.querySelector(".lfoot .ghost"); if (g) g.remove();
+  lessonAsk();
+}
+function lessonClose() {
+  LSN.on = false; LSN.root.hidden = true; document.body.classList.remove("lesson-on"); LSN.quit.hidden = true; renderHome();
+}
+function lessonAsk() {
+  const it = LSN.queue[LSN.i], q = it.q;
+  LSN.phase = "ask"; LSN.pick = null; LSN.inp = null;
+  LSN.foot.className = "lfoot"; LSN.sheet.hidden = true; LSN.sheet.innerHTML = "";
+  LSN.btn.className = "lbtn"; LSN.btn.textContent = "ตรวจ"; LSN.btn.disabled = true;
+  const card = el("div", "lcard");
+  if (it.retry) card.append(el("span", "lretry", "ทวนข้อที่ผิด"));
+  card.append(el("div", "eyebrow", q.kind));
+  if (q.log) { const log = el("div", "log"); card.append(log); logTo(log, "ATC", q.log, "atc"); }
+  card.append(el("p", "lq", q.q));
+  if (q.check) {
+    const inp = q.area ? el("textarea") : el("input");
+    if (q.area) inp.rows = 3; else { inp.type = "text"; inp.className = "qzin"; }
+    inp.placeholder = q.ph || "พิมพ์คำตอบ"; inp.setAttribute("aria-label", "คำตอบ"); inp.autocomplete = "off"; inp.spellcheck = false; inp.setAttribute("autocapitalize", "off");
+    inp.oninput = () => { LSN.btn.disabled = !inp.value.trim(); };
+    const skip = el("button", "lskip", "ไม่รู้ ดูเฉลยเลย"); skip.onclick = () => { if (LSN.phase === "ask") lessonCheck(null); };
+    card.append(inp, skip); LSN.inp = inp;
+    setTimeout(() => { if (LSN.inp === inp) inp.focus({ preventScroll: true }); }, 380);
+  } else {
+    const opts = el("div", "opts");
+    shuffle([q.right, ...q.wrongs]).forEach(t => {
+      const b = el("button", "opt", t); b.setAttribute("aria-pressed", "false");
+      b.onclick = () => { if (LSN.phase !== "ask") return; [...opts.children].forEach(c => { c.classList.toggle("sel", c === b); c.setAttribute("aria-pressed", c === b); }); LSN.pick = t; LSN.btn.disabled = false; };
+      opts.append(b);
+    });
+    card.append(opts); LSN.opts = opts;
+  }
+  LSN.body.innerHTML = ""; LSN.body.append(card); LSN.body.scrollTop = 0;
+}
+function lessonStat(pct) {
+  const s = store.get("atc-stats", { total: 0, sum: 0, days: {} });
+  s.total++; s.sum += pct; const k = today(); s.days[k] = (s.days[k] || 0) + 1;
+  const xp = pct >= 100 ? 15 : pct >= 70 ? 10 : 5; s.xp = (s.xp || 0) + xp; store.set("atc-stats", s); return xp;
+}
+function lessonCheck(given) {
+  const it = LSN.queue[LSN.i], q = it.q; let pct, extra = [];
+  if (q.check) {
+    const r = given == null ? 0 : q.check(given); pct = typeof r === "number" ? r : r.pct; extra = typeof r === "number" ? [] : (r.rows || []);
+    LSN.inp.disabled = true;
+  } else {
+    pct = LSN.pick === q.right ? 100 : 0;
+    [...LSN.opts.children].forEach(c => { c.disabled = true; c.classList.remove("sel"); if (c.textContent === q.right) c.classList.add("right"); else if (c.textContent === LSN.pick) c.classList.add("wrong"); });
+  }
+  const ok = pct >= (q.check ? 80 : 100);
+  LSN.xp += lessonStat(pct);
+  if (!it.retry && ok) LSN.firstOk++;
+  if (ok || it.retry) LSN.done++; else { LSN.queue.push({ q, retry: true }); LSN.miss.push(q.kind); }
+  LSN.run = ok ? LSN.run + 1 : 0; LSN.best = Math.max(LSN.best, LSN.run);
+  LSN.bar.style.width = Math.round(LSN.done / LSN.total * 100) + "%"; LSN.bar.parentNode.setAttribute("aria-valuenow", Math.round(LSN.done / LSN.total * 100));
+  LSN.combo.textContent = LSN.run >= 2 ? `ถูกติด ${LSN.run}` : ""; LSN.combo.classList.remove("pop"); void LSN.combo.offsetWidth; if (LSN.run >= 2) LSN.combo.classList.add("pop");
+  try { if (navigator.vibrate) navigator.vibrate(ok ? 12 : [25, 40, 25]); } catch (e) {}
+  const right = q.check ? q.answer : q.right, sh = LSN.sheet; sh.innerHTML = "";
+  const head = el("div", "lhead"); head.append(el("span", "lico", ok ? "✓" : "✕"),
+    el("span", null, ok ? pick(["เยี่ยม!", "ถูกเป๊ะ!", "แม่นมาก!", "เก่งมาก!"]) : pct >= 70 ? `เกือบแล้ว ${pct}%` : given === null ? "เฉลย" : "ยังไม่ถูก"));
+  sh.append(head);
+  if (!ok) { sh.append(el("div", "eyebrow", "คำตอบที่ถูก"), el("div", "lans", right)); }
+  if (q.check && given) sh.append(el("div", "eyebrow", "คุณตอบ"), el("div", "lans", given));
+  extra.forEach(([k, v]) => sh.append(el("div", "eyebrow", k), el("div", "lans", v)));
+  if (!ok && !q.check && q.notes && q.notes[LSN.pick]) sh.append(el("div", "eyebrow", "ข้อที่คุณเลือก"), el("div", "whybox miss", `${LSN.pick}: ${q.notes[LSN.pick]}`));
+  if (q.why) sh.append(el("div", "eyebrow", "อธิบายง่ายๆ"), el("div", "whybox", q.why));
+  if (q.src && q.src.length) sh.append(el("div", "lsrc", "อ้างอิง: " + q.src.join(" / ")));
+  if (!ok && !it.retry) sh.append(el("div", "lsrc", "ข้อนี้จะกลับมาให้ทำอีกครั้งท้ายบท"));
+  LSN.foot.className = "lfoot " + (ok ? "ok" : "bad"); sh.hidden = false; sh.scrollTop = 0;
+  LSN.btn.className = "lbtn " + (ok ? "ok" : "bad"); LSN.btn.textContent = ok ? "ต่อไป" : "เข้าใจแล้ว"; LSN.btn.disabled = false;
+  LSN.phase = "fb"; setTimeout(() => { if (LSN.phase === "fb") LSN.btn.focus({ preventScroll: true }); }, 60);
+}
+function lessonEnd() {
+  LSN.phase = "end";
+  const acc = LSN.total ? Math.round(LSN.firstOk / LSN.total * 100) : 0, sec = Math.round((Date.now() - LSN.t0) / 1000);
+  const s = store.get("atc-stats", { total: 0, sum: 0, days: {} }); s.prog = s.prog || {};
+  const k = "l-" + LSN.cat, p = s.prog[k] || { n: 0, pass: 0 }; p.n++; if (acc >= 80) p.pass++; s.prog[k] = p; store.set("atc-stats", s);
+  const box = el("div", "lend"); const m = el("div"); m.innerHTML = MASCOT; box.append(m.firstChild);
+  box.append(el("h2", null, acc === 100 ? "สมบูรณ์แบบ! ไม่ผิดเลย" : acc >= 80 ? "จบบทเรียนแล้ว เก่งมาก!" : "จบบทเรียนแล้ว"));
+  box.append(el("p", null, LSN.best >= 3 ? `ตอบถูกติดกันสูงสุด ${LSN.best} ข้อ` : "ทำบ่อยๆ แล้วจะแม่นขึ้นเรื่อยๆ"));
+  const st = el("div", "lstats");
+  [["c-amb", "XP ที่ได้", "+" + LSN.xp], ["c-mint", "แม่นยำ", acc + "%"], ["c-pri", "เวลา", `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`]].forEach(([c, t, v]) => {
+    const d = el("div", "lstat " + c); d.append(el("b", null, t), el("span", null, v)); st.append(d); });
+  box.append(st);
+  const miss = uniq(LSN.miss);
+  if (miss.length) { const mm = el("div", "lmiss"); mm.append(el("div", "eyebrow", "หัวข้อที่ควรทวน")); const ul = el("ul"); miss.forEach(x => ul.append(el("li", null, x))); mm.append(ul); box.append(mm); }
+  LSN.body.innerHTML = ""; LSN.body.append(box); LSN.body.scrollTop = 0;
+  LSN.foot.className = "lfoot"; LSN.sheet.hidden = true; LSN.combo.textContent = "";
+  LSN.btn.className = "lbtn ok"; LSN.btn.textContent = "เรียนต่ออีกบท"; LSN.btn.disabled = false;
+  const back = el("button", "lbtn ghost", "กลับหน้าหลัก"); back.onclick = () => { back.remove(); lessonClose(); location.hash = "#home"; }; LSN.foot.append(back);
+  if (!calm()) {
+    const cs = getComputedStyle(document.documentElement), cols = ["--pri", "--amb", "--mint", "--cor", "--vio", "--gold"].map(c => cs.getPropertyValue(c).trim());
+    for (let i = 0; i < (acc >= 80 ? 50 : 24); i++) {
+      const c = el("i", "confetti"); c.style.left = (5 + Math.random() * 90) + "vw"; c.style.background = pick(cols);
+      c.style.setProperty("--x", (Math.random() * 120 - 60) + "px"); c.style.setProperty("--r", (Math.random() * 900 - 450) + "deg");
+      c.style.setProperty("--t", (1.3 + Math.random() * 0.9) + "s"); c.style.animationDelay = (Math.random() * 0.3) + "s";
+      document.body.append(c); setTimeout(() => c.remove(), 2800);
+    }
+  }
+  renderHome();
+}
+/* entry points: a lesson unit at the top of the path, and a start button on the practice tab */
+const _unitsList = unitsList;
+unitsList = function () {
+  const u = _unitsList();
+  u.unshift({ c: "c-amb", n: 0, t: "บทเรียนด่วน 10 ข้อ", p: "เต็มจอ เลือกแล้วกดตรวจ ข้อที่ผิดจะกลับมาให้ทำอีกครั้งท้ายบท",
+    nodes: QZ_CATS.map(c => ({ key: "l-" + c.k, t: c.k === "all" ? "รวมทุกหมวด" : c.t, icon: L_ICON[c.k] || "star", go: () => lessonStart(c.k) })) });
+  return u;
+};
+(function () {
+  const b = el("button", "pill lgo", "เริ่มบทเรียนเต็มจอ 10 ข้อ"); b.onclick = () => lessonStart(QZ.cat || "all");
+  const pm = $("pModes"); if (pm) pm.before(b);
+})();
+window.__rt.lessonStart = lessonStart; window.__rt.LSN = LSN;
+
+renderHome();
 })();
 </script>
 </body>
